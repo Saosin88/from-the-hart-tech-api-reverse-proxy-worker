@@ -2,6 +2,7 @@ import { evaluateCaching } from './caching';
 import { addCorsHeaders, handleCors } from './cors';
 import { getServiceEndpoint } from './routes';
 import { Config } from './types';
+import { signRequest } from './aws-auth';
 
 export async function handleRequest(request: Request, config: Config, ctx: ExecutionContext): Promise<Response> {
 	if (request.method === 'OPTIONS') {
@@ -12,12 +13,10 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	const path = url.pathname;
 	const query = url.search;
 
-	// Get the appropriate service endpoint based on the request path and environment
 	let serviceEndpoint;
 	try {
 		serviceEndpoint = getServiceEndpoint(path, config.environment);
 	} catch (error) {
-		// Handle the case when no matching route is found
 		const errorMessage = error instanceof Error ? error.message : 'Unknown routing error';
 		console.error(`Routing error: ${errorMessage}`);
 		return addCorsHeaders(request, new Response(`Not Found: ${errorMessage}`, { status: 404 }), config);
@@ -51,7 +50,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		apiRequest = new Request(apiUrl, request);
 	}
 
-	apiRequest.headers.set(config.authHeader, config.authValue);
+	apiRequest = await signRequest(apiRequest, config.awsAccessKeyId, config.awsSecretAccessKey, config.awsRegion);
 
 	let errorFlag = false;
 	try {
