@@ -11,20 +11,18 @@ command = "npm run build"
 
 # Local environment configuration
 [env.local]
-vars = { API_GATEWAY_ORIGIN = "uy4sjtmphp7hhpr3lsky75rgfy0qkptg.lambda-url.af-south-1.on.aws" }
+vars = { ENVIRONMENT = "local" }
 
 # Dev environment configuration
 [env.dev]
-vars = { API_GATEWAY_ORIGIN = "fl0hv7pdrh.execute-api.af-south-1.amazonaws.com" }
-
+vars = { ENVIRONMENT = "dev" }
 [[env.dev.routes]]
 pattern = "dev-api.fromthehart.tech"
 custom_domain = true
 
 # Prod environment configuration
 [env.prod]
-vars = { API_GATEWAY_ORIGIN = "q3d5ewqlcb.execute-api.af-south-1.amazonaws.com" }
-
+vars = { ENVIRONMENT = "prod" }
 [[env.prod.routes]]
 pattern = "api.fromthehart.tech"
 custom_domain = true
