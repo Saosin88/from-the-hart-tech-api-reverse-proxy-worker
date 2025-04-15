@@ -15,7 +15,7 @@ export const serviceEndpoints = {
 		'/projects': '7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
 	},
 	prod: {
-		'/projects': 'uy4sjtmphp7hhpr3lsky75rgfy0qkptg.lambda-url.af-south-1.on.aws',
+		'/projects': '27zsxewc6uucq23tpr2erpygki0bwxya.lambda-url.af-south-1.on.aws',
 	},
 };
 
