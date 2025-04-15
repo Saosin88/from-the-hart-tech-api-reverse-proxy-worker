@@ -1,6 +1,5 @@
 export interface Env {
 	API_GATEWAY_ORIGIN: string;
-	// Add any other environment variables you need
 }
 
 interface Config {

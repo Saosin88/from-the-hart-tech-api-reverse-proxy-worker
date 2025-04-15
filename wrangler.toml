@@ -9,6 +9,10 @@ crons = []
 [build]
 command = "npm run build"
 
+# Local environment configuration
+[env.local]
+vars = { API_GATEWAY_ORIGIN = "uy4sjtmphp7hhpr3lsky75rgfy0qkptg.lambda-url.af-south-1.on.aws" }
+
 # Dev environment configuration
 [env.dev]
 vars = { API_GATEWAY_ORIGIN = "fl0hv7pdrh.execute-api.af-south-1.amazonaws.com" }
