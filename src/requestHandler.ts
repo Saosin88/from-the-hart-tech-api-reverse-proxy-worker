@@ -1,6 +1,6 @@
 import { evaluateCaching } from './caching';
 import { addCorsHeaders, handleCors } from './cors';
-import { getServiceEndpoint } from './routes';
+import { getServiceEndpoint, getRouteForPath, EndpointType } from './routes';
 import { Config } from './types';
 import { signRequest } from './aws-auth';
 
@@ -13,15 +13,16 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	const path = url.pathname;
 	const query = url.search;
 
-	let serviceEndpoint;
+	let route;
 	try {
-		serviceEndpoint = getServiceEndpoint(path, config.environment);
+		route = getRouteForPath(path, config.environment);
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : 'Unknown routing error';
 		console.error(`Routing error: ${errorMessage}`);
 		return addCorsHeaders(request, new Response(`Not Found: ${errorMessage}`, { status: 404 }), config);
 	}
 
+	const serviceEndpoint = route.serviceEndpoint;
 	const apiUrl = 'https://' + serviceEndpoint + path + query;
 
 	const initialCacheCheck = evaluateCaching(request);
@@ -50,7 +51,9 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		apiRequest = new Request(apiUrl, request);
 	}
 
-	apiRequest = await signRequest(apiRequest, config.awsAccessKeyId, config.awsSecretAccessKey);
+	if (route.endpointType === EndpointType.AWS_LAMBDA_FUNCTION_URL) {
+		apiRequest = await signRequest(apiRequest, config.awsAccessKeyId, config.awsSecretAccessKey);
+	}
 
 	let errorFlag = false;
 	try {
