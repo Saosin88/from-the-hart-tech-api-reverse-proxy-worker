@@ -1,6 +1,13 @@
 export interface RouteConfig {
 	path: string;
 	serviceEndpoint: string;
+	endpointType: EndpointType;
+}
+
+export enum EndpointType {
+	AWS_LAMBDA_FUNCTION_URL = 'AWS_LAMBDA_FUNCTION_URL',
+	GCP_CLOUD_RUN_ENDPOINT = 'GCP_CLOUD_RUN_ENDPOINT',
+	OTHER = 'OTHER',
 }
 
 // Define environment-specific endpoints
@@ -9,13 +16,22 @@ export type Environment = 'local' | 'dev' | 'prod';
 // Define environment-specific endpoints
 export const serviceEndpoints = {
 	local: {
-		'/projects': '7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
+		'/projects': {
+			endpoint: '7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
+			type: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+		},
 	},
 	dev: {
-		'/projects': '7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
+		'/projects': {
+			endpoint: '7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
+			type: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+		},
 	},
 	prod: {
-		'/projects': '27zsxewc6uucq23tpr2erpygki0bwxya.lambda-url.af-south-1.on.aws',
+		'/projects': {
+			endpoint: '27zsxewc6uucq23tpr2erpygki0bwxya.lambda-url.af-south-1.on.aws',
+			type: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+		},
 	},
 };
 
@@ -27,13 +43,19 @@ export function getRoutes(environment: string): RouteConfig[] {
 
 	const endpoints = serviceEndpoints[environment as Environment];
 
-	return Object.entries(endpoints).map(([path, serviceEndpoint]) => ({
+	return Object.entries(endpoints).map(([path, { endpoint, type }]) => ({
 		path,
-		serviceEndpoint,
+		serviceEndpoint: endpoint,
+		endpointType: type,
 	}));
 }
 
 export function getServiceEndpoint(path: string, environment: string): string {
+	const route = getRouteForPath(path, environment);
+	return route.serviceEndpoint;
+}
+
+export function getRouteForPath(path: string, environment: string): RouteConfig {
 	const routes = getRoutes(environment);
 
 	// Find the first route that matches the path (paths that start with the route path)
@@ -49,5 +71,5 @@ export function getServiceEndpoint(path: string, environment: string): string {
 		throw new Error(`No route found for path: ${path}`);
 	}
 
-	return route.serviceEndpoint;
+	return route;
 }
