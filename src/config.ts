@@ -13,7 +13,6 @@ export function createConfig(env: Env): Config {
 		corsMaxAge: 3600,
 		awsAccessKeyId: env.AWS_ACCESS_KEY_ID,
 		awsSecretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-		awsRegion: env.AWS_REGION || 'af-south-1',
 		environment: environment,
 	};
 }

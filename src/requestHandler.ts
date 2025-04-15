@@ -50,7 +50,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		apiRequest = new Request(apiUrl, request);
 	}
 
-	apiRequest = await signRequest(apiRequest, config.awsAccessKeyId, config.awsSecretAccessKey, config.awsRegion);
+	apiRequest = await signRequest(apiRequest, config.awsAccessKeyId, config.awsSecretAccessKey);
 
 	let errorFlag = false;
 	try {
