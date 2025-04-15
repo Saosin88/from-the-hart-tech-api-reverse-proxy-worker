@@ -9,10 +9,10 @@ export type Environment = 'local' | 'dev' | 'prod';
 // Define environment-specific endpoints
 export const serviceEndpoints = {
 	local: {
-		'/projects': 'uy4sjtmphp7hhpr3lsky75rgfy0qkptg.lambda-url.af-south-1.on.aws',
+		'/projects': '7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
 	},
 	dev: {
-		'/projects': 'uy4sjtmphp7hhpr3lsky75rgfy0qkptg.lambda-url.af-south-1.on.aws',
+		'/projects': '7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
 	},
 	prod: {
 		'/projects': 'uy4sjtmphp7hhpr3lsky75rgfy0qkptg.lambda-url.af-south-1.on.aws',
