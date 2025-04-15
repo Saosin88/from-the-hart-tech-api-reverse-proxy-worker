@@ -1,6 +1,6 @@
 name = "from-the-hart-tech-api-reverse-proxy-worker"
 main = "src/index.ts"
-compatibility_date = "2025-04-14"
+compatibility_date = "2025-04-09"
 workers_dev = false
 
 [triggers]
@@ -9,18 +9,20 @@ crons = []
 [build]
 command = "npm run build"
 
+# Local environment configuration
+[env.local]
+vars = { ENVIRONMENT = "local" }
+
 # Dev environment configuration
 [env.dev]
-vars = { API_GATEWAY_ORIGIN = "fl0hv7pdrh.execute-api.af-south-1.amazonaws.com" }
-
+vars = { ENVIRONMENT = "dev" }
 [[env.dev.routes]]
 pattern = "dev-api.fromthehart.tech"
 custom_domain = true
 
 # Prod environment configuration
 [env.prod]
-vars = { API_GATEWAY_ORIGIN = "q3d5ewqlcb.execute-api.af-south-1.amazonaws.com" }
-
+vars = { ENVIRONMENT = "prod" }
 [[env.prod.routes]]
 pattern = "api.fromthehart.tech"
 custom_domain = true
