@@ -6,8 +6,6 @@ export interface Env {
 }
 
 export interface Config {
-	authHeader: string;
-	authValue: string;
 	corsAllowedOrigins: string[];
 	corsAllowedMethods: string[];
 	corsAllowedHeaders: string[];
