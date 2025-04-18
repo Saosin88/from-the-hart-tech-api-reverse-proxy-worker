@@ -6,7 +6,7 @@ export interface RouteConfig {
 
 export enum EndpointType {
 	AWS_LAMBDA_FUNCTION_URL = 'AWS_LAMBDA_FUNCTION_URL',
-	GCP_CLOUD_RUN_ENDPOINT = 'GCP_CLOUD_RUN_ENDPOINT',
+	GCP_CLOUD_RUN_SERVICE_URL = 'GCP_CLOUD_RUN_SERVICE_URL',
 	OTHER = 'OTHER',
 }
 
@@ -20,11 +20,19 @@ export const serviceEndpoints = {
 			endpoint: '7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
 			type: EndpointType.AWS_LAMBDA_FUNCTION_URL,
 		},
+		'/auth': {
+			endpoint: 'from-the-hart-auth-915273311819.africa-south1.run.app',
+			type: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+		},
 	},
 	dev: {
 		'/projects': {
 			endpoint: '7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
 			type: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+		},
+		'/auth': {
+			endpoint: 'from-the-hart-auth-915273311819.africa-south1.run.app',
+			type: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
 		},
 	},
 	prod: {

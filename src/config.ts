@@ -13,6 +13,8 @@ export function createConfig(env: Env): Config {
 		corsMaxAge: 3600,
 		awsAccessKeyId: env.AWS_ACCESS_KEY_ID,
 		awsSecretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+		googleServiceAccountemail: env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+		googleServiceAccountKey: env.GOOGLE_SERVICE_ACCOUNT_KEY,
 		environment: environment,
 	};
 }

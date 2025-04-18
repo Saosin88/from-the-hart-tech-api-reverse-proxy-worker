@@ -1,8 +1,9 @@
 import { evaluateCaching } from './caching';
 import { addCorsHeaders, handleCors } from './cors';
-import { getServiceEndpoint, getRouteForPath, EndpointType } from './routes';
+import { getRouteForPath, EndpointType } from './routes';
 import { Config } from './types';
 import { signRequest } from './aws-auth';
+import { getGoogleIdToken } from './gcp-auth';
 
 export async function handleRequest(request: Request, config: Config, ctx: ExecutionContext): Promise<Response> {
 	if (request.method === 'OPTIONS') {
@@ -53,8 +54,14 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 
 	if (route.endpointType === EndpointType.AWS_LAMBDA_FUNCTION_URL) {
 		apiRequest = await signRequest(apiRequest, config.awsAccessKeyId, config.awsSecretAccessKey);
+	} else if (route.endpointType === EndpointType.GCP_CLOUD_RUN_SERVICE_URL) {
+		const googleToken = await getGoogleIdToken(config.googleServiceAccountemail, config.googleServiceAccountKey, apiRequest.url, cache);
+		apiRequest.headers.set('X-Serverless-Authorization', `Bearer ${googleToken}`);
 	}
 
+	console.log(`Making request to API Gateway: ${apiRequest.url}`);
+	console.log(`Request method: ${apiRequest.method}`);
+	console.log(`Request headers: ${JSON.stringify([...apiRequest.headers])}`);
 	let errorFlag = false;
 	try {
 		response = await fetch(apiRequest, {
