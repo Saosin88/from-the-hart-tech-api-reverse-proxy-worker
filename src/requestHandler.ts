@@ -35,12 +35,9 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	if (initialCacheCheck.shouldCache) {
 		response = await cache.match(cacheKey);
 		if (response) {
-			console.log('Cache hit for:', cacheKey);
 			return addCorsHeaders(request, response, config);
 		}
 	}
-
-	console.log(`Response not in cache. Fetching from origin: ${request.url}`);
 
 	let apiRequest;
 	if (['GET', 'HEAD'].includes(request.method)) {
@@ -59,9 +56,6 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		apiRequest.headers.set('X-Serverless-Authorization', `Bearer ${googleToken}`);
 	}
 
-	console.log(`Making request to API Gateway: ${apiRequest.url}`);
-	console.log(`Request method: ${apiRequest.method}`);
-	console.log(`Request headers: ${JSON.stringify([...apiRequest.headers])}`);
 	let errorFlag = false;
 	try {
 		response = await fetch(apiRequest, {
@@ -85,12 +79,10 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	const cacheDecision = evaluateCaching(request, corsResponse);
 
 	if (cacheDecision.shouldCache && !errorFlag) {
-		console.log(`Caching response for ${cacheDecision.howLong} seconds`);
 		const responseToCache = corsResponse.clone();
 		ctx.waitUntil(cache.put(cacheKey, responseToCache));
 		return corsResponse;
 	} else {
-		console.log('Response not cacheable: missing required cache directives or error occurred');
 		return corsResponse;
 	}
 }
