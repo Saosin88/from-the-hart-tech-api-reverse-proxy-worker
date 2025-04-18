@@ -6,7 +6,10 @@ export async function getGoogleIdToken(
 ): Promise<string> {
 	const cacheKey = `google-id-token:${serviceAccountEmail}:${cloudRunServiceUrl}`;
 	const cachedToken = await getCachedToken(cache, cacheKey);
-	if (cachedToken) return cachedToken;
+	if (cachedToken) {
+		console.log(`Using cached token for ${serviceAccountEmail} to access ${cloudRunServiceUrl}`);
+		return cachedToken;
+	}
 
 	const tokenUrl = 'https://oauth2.googleapis.com/token';
 	const now = Math.floor(Date.now() / 1000);
