@@ -46,6 +46,11 @@ export const serviceEndpoints = {
 			endpointType: EndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: true,
 		},
+		'/auth': {
+			serviceEndpoint: 'https://from-the-hart-auth-247813151171.africa-south1.run.app',
+			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			cacheable: false,
+		},
 	},
 };
 
