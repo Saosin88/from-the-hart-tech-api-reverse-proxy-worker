@@ -38,15 +38,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		}
 	}
 
-	let apiRequest;
-	if (['GET', 'HEAD'].includes(request.method)) {
-		apiRequest = new Request(apiUrl, {
-			method: request.method,
-			headers: request.headers,
-		});
-	} else {
-		apiRequest = new Request(apiUrl, request);
-	}
+	let apiRequest = new Request(apiUrl, request);
 
 	if (route.endpointType === EndpointType.AWS_LAMBDA_FUNCTION_URL) {
 		apiRequest = await signRequest(apiRequest, config.awsAccessKeyId, config.awsSecretAccessKey);
