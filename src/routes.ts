@@ -2,11 +2,12 @@ export interface RouteConfig {
 	path: string;
 	serviceEndpoint: string;
 	endpointType: EndpointType;
+	cacheable: boolean;
 }
 
 export enum EndpointType {
 	AWS_LAMBDA_FUNCTION_URL = 'AWS_LAMBDA_FUNCTION_URL',
-	GCP_CLOUD_RUN_ENDPOINT = 'GCP_CLOUD_RUN_ENDPOINT',
+	GCP_CLOUD_RUN_SERVICE_URL = 'GCP_CLOUD_RUN_SERVICE_URL',
 	OTHER = 'OTHER',
 }
 
@@ -17,20 +18,33 @@ export type Environment = 'local' | 'dev' | 'prod';
 export const serviceEndpoints = {
 	local: {
 		'/projects': {
-			endpoint: '7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
-			type: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+			serviceEndpoint: 'https://7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
+			endpointType: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+			cacheable: true,
+		},
+		'/auth': {
+			serviceEndpoint: 'https://from-the-hart-auth-915273311819.africa-south1.run.app',
+			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			cacheable: false,
 		},
 	},
 	dev: {
 		'/projects': {
-			endpoint: '7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
-			type: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+			serviceEndpoint: 'https://7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
+			endpointType: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+			cacheable: true,
+		},
+		'/auth': {
+			serviceEndpoint: 'https://from-the-hart-auth-915273311819.africa-south1.run.app',
+			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			cacheable: false,
 		},
 	},
 	prod: {
 		'/projects': {
-			endpoint: '27zsxewc6uucq23tpr2erpygki0bwxya.lambda-url.af-south-1.on.aws',
-			type: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+			serviceEndpoint: 'https://27zsxewc6uucq23tpr2erpygki0bwxya.lambda-url.af-south-1.on.aws',
+			endpointType: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+			cacheable: true,
 		},
 	},
 };
@@ -43,10 +57,11 @@ export function getRoutes(environment: string): RouteConfig[] {
 
 	const endpoints = serviceEndpoints[environment as Environment];
 
-	return Object.entries(endpoints).map(([path, { endpoint, type }]) => ({
+	return Object.entries(endpoints).map(([path, { serviceEndpoint, endpointType, cacheable }]) => ({
 		path,
-		serviceEndpoint: endpoint,
-		endpointType: type,
+		serviceEndpoint,
+		endpointType,
+		cacheable,
 	}));
 }
 
