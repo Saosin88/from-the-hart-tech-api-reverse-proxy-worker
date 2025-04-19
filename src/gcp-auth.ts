@@ -7,7 +7,6 @@ export async function getGoogleIdToken(
 	const cacheKey = `google-id-token:${serviceAccountEmail}:${cloudRunServiceUrl}`;
 	const cachedToken = await getCachedToken(cache, cacheKey);
 	if (cachedToken) {
-		console.log(`Using cached token for ${serviceAccountEmail} to access ${cloudRunServiceUrl}`);
 		return cachedToken;
 	}
 

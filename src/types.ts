@@ -19,14 +19,3 @@ export interface Config {
 	googleServiceAccountKey: string;
 	environment: string;
 }
-
-export interface CachingDecision {
-	shouldCache: boolean;
-	howLong: number;
-}
-
-export interface RouteConfigMap {
-	[environment: string]: {
-		[path: string]: string;
-	};
-}

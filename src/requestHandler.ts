@@ -1,4 +1,4 @@
-import { evaluateCaching } from './caching';
+import { checkCache, shouldCache } from './caching';
 import { addCorsHeaders, handleCors } from './cors';
 import { getRouteForPath, EndpointType } from './routes';
 import { Config } from './types';
@@ -24,15 +24,14 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	}
 
 	const serviceEndpoint = route.serviceEndpoint;
-	const apiUrl = 'https://' + serviceEndpoint + path + query;
+	const apiUrl = serviceEndpoint + path + query;
 
-	const initialCacheCheck = evaluateCaching(request);
-	const authState = request.headers.has('Authorization') ? request.headers.get('Authorization') : 'noauth';
-	const cacheKey = new Request(`${apiUrl}?__auth=${authState}`, { method: request.method });
+	const cacheKey = new Request(apiUrl, { method: request.method });
 	const cache = caches.default;
+	const doCacheCheck = checkCache(route.cacheable, request);
 
 	let response;
-	if (initialCacheCheck.shouldCache) {
+	if (doCacheCheck) {
 		response = await cache.match(cacheKey);
 		if (response) {
 			return addCorsHeaders(request, response, config);
@@ -58,12 +57,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 
 	let errorFlag = false;
 	try {
-		response = await fetch(apiRequest, {
-			cf: {
-				cacheEverything: false,
-				respectOriginHeaders: true,
-			},
-		} as RequestInit);
+		response = await fetch(apiRequest);
 
 		if (!response.ok) {
 			console.error(`API Gateway error: ${response.status} ${response.statusText}`);
@@ -76,9 +70,9 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 
 	const corsResponse = addCorsHeaders(request, response, config);
 
-	const cacheDecision = evaluateCaching(request, corsResponse);
+	const shouldCacheResponse = shouldCache(route.cacheable, corsResponse);
 
-	if (cacheDecision.shouldCache && !errorFlag) {
+	if (shouldCacheResponse && !errorFlag) {
 		const responseToCache = corsResponse.clone();
 		ctx.waitUntil(cache.put(cacheKey, responseToCache));
 		return corsResponse;
