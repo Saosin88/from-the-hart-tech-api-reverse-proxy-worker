@@ -1,6 +1,6 @@
 name = "from-the-hart-tech-api-reverse-proxy-worker"
 main = "src/index.ts"
-compatibility_date = "2025-04-09"
+compatibility_date = "2025-03-10"
 workers_dev = false
 
 [triggers]

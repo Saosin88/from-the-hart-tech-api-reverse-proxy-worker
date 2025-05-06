@@ -4,8 +4,13 @@ import { getRouteForPath, EndpointType } from './routes';
 import { Config } from './types';
 import { signRequest } from './aws-auth';
 import { getGoogleIdToken } from './gcp-auth';
+import { isSuspiciousBot } from './bot-management';
 
 export async function handleRequest(request: Request, config: Config, ctx: ExecutionContext): Promise<Response> {
+	if (isSuspiciousBot(request)) {
+		return new Response('Access denied', { status: 403 });
+	}
+
 	if (request.method === 'OPTIONS') {
 		return handleCors(request, config);
 	}
@@ -19,7 +24,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		route = getRouteForPath(path, config.environment);
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : 'Unknown routing error';
-		console.error(`Routing error: ${errorMessage}`);
+		// console.error(`Routing error: ${errorMessage}`);
 		return addCorsHeaders(request, new Response(`Not Found: ${errorMessage}`, { status: 404 }), config);
 	}
 
@@ -52,11 +57,11 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		response = await fetch(apiRequest);
 
 		if (!response.ok) {
-			console.error(`API Gateway error: ${response.status} ${response.statusText}`);
+			// console.error(`API Gateway error: ${response.status} ${response.statusText}`);
 			errorFlag = true;
 		}
 	} catch (error) {
-		console.error('Fetch error:', error);
+		// console.error('Fetch error:', error);
 		return new Response('API Gateway unavailable', { status: 503 });
 	}
 
