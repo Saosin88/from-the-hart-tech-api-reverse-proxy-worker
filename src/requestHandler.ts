@@ -4,13 +4,8 @@ import { getRouteForPath, EndpointType } from './routes';
 import { Config } from './types';
 import { signRequest } from './aws-auth';
 import { getGoogleIdToken } from './gcp-auth';
-import { isSuspiciousBot } from './bot-management';
 
 export async function handleRequest(request: Request, config: Config, ctx: ExecutionContext): Promise<Response> {
-	if (isSuspiciousBot(request)) {
-		return new Response('Access denied', { status: 403 });
-	}
-
 	if (request.method === 'OPTIONS') {
 		return handleCors(request, config);
 	}
