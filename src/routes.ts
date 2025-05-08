@@ -4,6 +4,14 @@ export interface RouteConfig {
 	endpointType: EndpointType;
 	cacheable: boolean;
 	validateTurnstileToken: boolean;
+}
+
+// Internal interface used for configuration and not exposed to consumers
+interface ServiceEndpointConfig {
+	serviceEndpoint: string;
+	endpointType: EndpointType;
+	cacheable?: boolean;
+	validateTurnstileToken?: boolean;
 	pathRules?: {
 		[path: string]: {
 			validateTurnstileToken: boolean;
@@ -31,7 +39,6 @@ export const serviceEndpoints = {
 		'/auth': {
 			serviceEndpoint: 'https://from-the-hart-auth-915273311819.africa-south1.run.app',
 			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
-			cacheable: false,
 			pathRules: {
 				'/auth/login': { validateTurnstileToken: true },
 				'/auth/register': { validateTurnstileToken: true },
@@ -48,7 +55,6 @@ export const serviceEndpoints = {
 		'/auth': {
 			serviceEndpoint: 'https://from-the-hart-auth-915273311819.africa-south1.run.app',
 			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
-			cacheable: false,
 			pathRules: {
 				'/auth/login': { validateTurnstileToken: true },
 				'/auth/register': { validateTurnstileToken: true },
@@ -65,7 +71,6 @@ export const serviceEndpoints = {
 		'/auth': {
 			serviceEndpoint: 'https://from-the-hart-auth-247813151171.africa-south1.run.app',
 			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
-			cacheable: false,
 			pathRules: {
 				'/auth/login': { validateTurnstileToken: true },
 				'/auth/register': { validateTurnstileToken: true },
@@ -83,13 +88,19 @@ export function getRoutes(environment: string): RouteConfig[] {
 
 	const endpoints = serviceEndpoints[environment as Environment];
 
-	return Object.entries(endpoints).map(([path, { serviceEndpoint, endpointType, cacheable }]) => ({
-		path,
-		serviceEndpoint,
-		endpointType,
-		cacheable,
-		validateTurnstileToken: false,
-	}));
+	return Object.entries(endpoints).map(([path, config]) => {
+		const serviceConfig = config as ServiceEndpointConfig;
+
+		const routeConfig: RouteConfig = {
+			path,
+			serviceEndpoint: serviceConfig.serviceEndpoint,
+			endpointType: serviceConfig.endpointType,
+			cacheable: serviceConfig.cacheable ?? false,
+			validateTurnstileToken: serviceConfig.validateTurnstileToken ?? false,
+		};
+
+		return routeConfig;
+	});
 }
 
 export function getServiceEndpoint(path: string, environment: string): string {
@@ -98,27 +109,42 @@ export function getServiceEndpoint(path: string, environment: string): string {
 }
 
 export function getRouteForPath(path: string, environment: string): RouteConfig {
-	const routes = getRoutes(environment);
+	// Get the raw endpoints configuration
+	if (!(environment in serviceEndpoints)) {
+		throw new Error(`Invalid environment: ${environment}. Available environments: ${Object.keys(serviceEndpoints).join(', ')}`);
+	}
 
-	// Find the first route that matches the path (paths that start with the route path)
-	const route = routes.find(
-		(route) =>
-			path.startsWith(route.path) &&
+	const endpoints = serviceEndpoints[environment as Environment];
+
+	// Find the matching base route
+	const baseRoutePath = Object.keys(endpoints).find(
+		(routePath) =>
+			path.startsWith(routePath) &&
 			// For the default route, only match if it's exactly '/' to avoid matching everything
-			(route.path !== '/' || path === '/'),
+			(routePath !== '/' || path === '/'),
 	);
 
-	// If no route matches, throw an error instead of using a default
-	if (!route) {
+	if (!baseRoutePath) {
 		throw new Error(`No route found for path: ${path}`);
 	}
-	console.log('Route found:', JSON.stringify(route));
-	// If the route has path rules, check if the current path matches any of them
-	if (route.pathRules && route.pathRules[path]) {
-		console.log('Overriding rule for Route:', JSON.stringify(route));
-		route.validateTurnstileToken = route.pathRules[path].validateTurnstileToken;
-		console.log('Overriden rule for Route:', JSON.stringify(route));
+
+	const endpointConfig = endpoints[baseRoutePath as keyof typeof endpoints] as ServiceEndpointConfig;
+
+	// Create a RouteConfig without pathRules
+	const route: RouteConfig = {
+		path: baseRoutePath,
+		serviceEndpoint: endpointConfig.serviceEndpoint,
+		endpointType: endpointConfig.endpointType,
+		cacheable: endpointConfig.cacheable ?? false,
+		validateTurnstileToken: endpointConfig.validateTurnstileToken ?? false,
+	};
+
+	// Apply path-specific rules if they exist
+	if (endpointConfig.pathRules && endpointConfig.pathRules[path]) {
+		route.validateTurnstileToken = endpointConfig.pathRules[path].validateTurnstileToken;
 	}
+
+	console.log('Route:', JSON.stringify(route));
 
 	return route;
 }
