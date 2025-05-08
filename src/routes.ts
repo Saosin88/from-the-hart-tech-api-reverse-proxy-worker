@@ -144,7 +144,5 @@ export function getRouteForPath(path: string, environment: string): RouteConfig 
 		route.validateTurnstileToken = endpointConfig.pathRules[path].validateTurnstileToken;
 	}
 
-	console.log('Route:', JSON.stringify(route));
-
 	return route;
 }
