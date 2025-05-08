@@ -15,6 +15,7 @@ export function createConfig(env: Env): Config {
 		awsSecretAccessKey: env.AWS_SECRET_ACCESS_KEY,
 		googleServiceAccountemail: env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
 		googleServiceAccountKey: env.GOOGLE_SERVICE_ACCOUNT_KEY,
+		cloudflareTurnstileSecretKey: env.CLOUDFLARE_TURNSTILE_SECRET_KEY,
 		environment: environment,
 	};
 }

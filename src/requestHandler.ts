@@ -4,6 +4,7 @@ import { getRouteForPath, EndpointType } from './routes';
 import { Config } from './types';
 import { signRequest } from './aws-auth';
 import { getGoogleIdToken } from './gcp-auth';
+import { validateTurnstileToken } from './cloudflare-turnstile';
 
 export async function handleRequest(request: Request, config: Config, ctx: ExecutionContext): Promise<Response> {
 	if (request.method === 'OPTIONS') {
@@ -21,6 +22,25 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		const errorMessage = error instanceof Error ? error.message : 'Unknown routing error';
 		// console.error(`Routing error: ${errorMessage}`);
 		return addCorsHeaders(request, new Response(`Not Found: ${errorMessage}`, { status: 404 }), config);
+	}
+
+	if (route.validateTurnstileToken) {
+		const turnstileToken = request.headers.get('x-cf-turnstile-token');
+
+		if (!turnstileToken) {
+			return addCorsHeaders(request, new Response('Turnstile token required', { status: 403 }), config);
+		}
+
+		const clientIP = request.headers.get('cf-connecting-ip') || '';
+		console.log('Client IP:', clientIP);
+		console.log('Turnstile token:', turnstileToken);
+		console.log('Cloudflare Turnstile secret key:', config.cloudflareTurnstileSecretKey);
+
+		const isValid = await validateTurnstileToken(turnstileToken, config.cloudflareTurnstileSecretKey, clientIP);
+		console.log('Turnstile validation result:', isValid);
+		if (!isValid) {
+			return addCorsHeaders(request, new Response('Invalid Turnstile token', { status: 403 }), config);
+		}
 	}
 
 	const serviceEndpoint = route.serviceEndpoint;

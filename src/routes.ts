@@ -3,6 +3,12 @@ export interface RouteConfig {
 	serviceEndpoint: string;
 	endpointType: EndpointType;
 	cacheable: boolean;
+	validateTurnstileToken: boolean;
+	pathRules?: {
+		[path: string]: {
+			validateTurnstileToken: boolean;
+		};
+	};
 }
 
 export enum EndpointType {
@@ -26,6 +32,11 @@ export const serviceEndpoints = {
 			serviceEndpoint: 'https://from-the-hart-auth-915273311819.africa-south1.run.app',
 			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
 			cacheable: false,
+			pathRules: {
+				'/auth/login': { validateTurnstileToken: true },
+				'/auth/register': { validateTurnstileToken: true },
+				'/auth/forgot-password': { validateTurnstileToken: true },
+			},
 		},
 	},
 	dev: {
@@ -38,6 +49,11 @@ export const serviceEndpoints = {
 			serviceEndpoint: 'https://from-the-hart-auth-915273311819.africa-south1.run.app',
 			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
 			cacheable: false,
+			pathRules: {
+				'/auth/login': { validateTurnstileToken: true },
+				'/auth/register': { validateTurnstileToken: true },
+				'/auth/forgot-password': { validateTurnstileToken: true },
+			},
 		},
 	},
 	prod: {
@@ -50,6 +66,11 @@ export const serviceEndpoints = {
 			serviceEndpoint: 'https://from-the-hart-auth-247813151171.africa-south1.run.app',
 			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
 			cacheable: false,
+			pathRules: {
+				'/auth/login': { validateTurnstileToken: true },
+				'/auth/register': { validateTurnstileToken: true },
+				'/auth/forgot-password': { validateTurnstileToken: true },
+			},
 		},
 	},
 };
@@ -67,6 +88,7 @@ export function getRoutes(environment: string): RouteConfig[] {
 		serviceEndpoint,
 		endpointType,
 		cacheable,
+		validateTurnstileToken: false,
 	}));
 }
 
@@ -83,12 +105,16 @@ export function getRouteForPath(path: string, environment: string): RouteConfig 
 		(route) =>
 			path.startsWith(route.path) &&
 			// For the default route, only match if it's exactly '/' to avoid matching everything
-			(route.path !== '/' || path === '/')
+			(route.path !== '/' || path === '/'),
 	);
 
 	// If no route matches, throw an error instead of using a default
 	if (!route) {
 		throw new Error(`No route found for path: ${path}`);
+	}
+	// If the route has path rules, check if the current path matches any of them
+	if (route.pathRules && route.pathRules[path]) {
+		route.validateTurnstileToken = route.pathRules[path].validateTurnstileToken;
 	}
 
 	return route;

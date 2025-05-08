@@ -3,6 +3,7 @@ export interface Env {
 	AWS_SECRET_ACCESS_KEY: string;
 	GOOGLE_SERVICE_ACCOUNT_EMAIL: string;
 	GOOGLE_SERVICE_ACCOUNT_KEY: string;
+	CLOUDFLARE_TURNSTILE_SECRET_KEY: string;
 	ENVIRONMENT?: string;
 }
 
@@ -17,5 +18,6 @@ export interface Config {
 	awsSecretAccessKey: string;
 	googleServiceAccountemail: string;
 	googleServiceAccountKey: string;
+	cloudflareTurnstileSecretKey: string;
 	environment: string;
 }
