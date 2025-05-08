@@ -30,14 +30,8 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		if (!turnstileToken) {
 			return addCorsHeaders(request, new Response('Turnstile token required', { status: 403 }), config);
 		}
-
 		const clientIP = request.headers.get('cf-connecting-ip') || '';
-		console.log('Client IP:', clientIP);
-		console.log('Turnstile token:', turnstileToken);
-		console.log('Cloudflare Turnstile secret key:', config.cloudflareTurnstileSecretKey);
-
 		const isValid = await validateTurnstileToken(turnstileToken, config.cloudflareTurnstileSecretKey, clientIP);
-		console.log('Turnstile validation result:', isValid);
 		if (!isValid) {
 			return addCorsHeaders(request, new Response('Invalid Turnstile token', { status: 403 }), config);
 		}
