@@ -112,9 +112,12 @@ export function getRouteForPath(path: string, environment: string): RouteConfig 
 	if (!route) {
 		throw new Error(`No route found for path: ${path}`);
 	}
+	console.log('Route found:', JSON.stringify(route));
 	// If the route has path rules, check if the current path matches any of them
 	if (route.pathRules && route.pathRules[path]) {
+		console.log('Overriding rule for Route:', JSON.stringify(route));
 		route.validateTurnstileToken = route.pathRules[path].validateTurnstileToken;
+		console.log('Overriden rule for Route:', JSON.stringify(route));
 	}
 
 	return route;
