@@ -1,23 +1,46 @@
 import { Config } from './types';
 
-export function handleCors(request: Request, config: Config): Response {
+export function handleCors(request: Request, config: Config): Response | null {
 	const origin = request.headers.get('Origin');
+	const method = request.method.toUpperCase();
 
-	if (origin && (config.corsAllowedOrigins.includes(origin) || config.corsAllowedOrigins.includes('*'))) {
-		return new Response(null, {
-			status: 204,
+	if (method === 'OPTIONS') {
+		if (origin && (config.corsAllowedOrigins.includes(origin) || config.corsAllowedOrigins.includes('*'))) {
+			return new Response(null, {
+				status: 204,
+				headers: {
+					'Access-Control-Allow-Origin': origin,
+					'Access-Control-Allow-Methods': config.corsAllowedMethods.join(', '),
+					'Access-Control-Allow-Headers': config.corsAllowedHeaders.join(', '),
+					'Access-Control-Expose-Headers': config.corsExposeHeaders.join(', '),
+					'Access-Control-Allow-Credentials': config.corsAllowCredentials ? 'true' : 'false',
+					'Access-Control-Max-Age': config.corsMaxAge.toString(),
+				},
+			});
+		}
+		return new Response(null, { status: 403 });
+	}
+
+	if (!config.corsAllowedMethods.includes(method)) {
+		return new Response('Method Not Allowed', {
+			status: 405,
 			headers: {
-				'Access-Control-Allow-Origin': origin,
-				'Access-Control-Allow-Methods': config.corsAllowedMethods.join(', '),
-				'Access-Control-Allow-Headers': config.corsAllowedHeaders.join(', '),
-				'Access-Control-Expose-Headers': config.corsExposeHeaders.join(', '),
-				'Access-Control-Allow-Credentials': config.corsAllowCredentials ? 'true' : 'false',
-				'Access-Control-Max-Age': config.corsMaxAge.toString(),
+				Allow: config.corsAllowedMethods.join(', '),
+				'Content-Type': 'text/plain',
 			},
 		});
 	}
 
-	return new Response(null, { status: 403 });
+	if (origin && !config.corsAllowedOrigins.includes(origin) && !config.corsAllowedOrigins.includes('*')) {
+		return new Response('Forbidden - Origin Not Allowed', {
+			status: 403,
+			headers: {
+				'Content-Type': 'text/plain',
+			},
+		});
+	}
+
+	return null;
 }
 
 export function addCorsHeaders(request: Request, response: Response, config: Config): Response {

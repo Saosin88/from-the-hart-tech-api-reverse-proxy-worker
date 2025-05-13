@@ -7,8 +7,9 @@ import { getGoogleIdToken } from './gcp-auth';
 import { validateTurnstileToken } from './cloudflare-turnstile';
 
 export async function handleRequest(request: Request, config: Config, ctx: ExecutionContext): Promise<Response> {
-	if (request.method === 'OPTIONS') {
-		return handleCors(request, config);
+	const corsResult = handleCors(request, config);
+	if (corsResult) {
+		return corsResult;
 	}
 
 	const url = new URL(request.url);
