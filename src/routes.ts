@@ -1,60 +1,66 @@
-export interface RouteConfig {
+export interface ApiRouteConfig {
 	path: string;
 	serviceEndpoint: string;
-	endpointType: EndpointType;
+	endpointType: ApiEndpointType;
 	cacheable: boolean;
 	validateTurnstileToken: boolean;
+	validateAccessToken: boolean;
 }
 
-// Internal interface used for configuration and not exposed to consumers
-interface ServiceEndpointConfig {
+interface ApiServiceConfig {
 	serviceEndpoint: string;
-	endpointType: EndpointType;
+	endpointType: ApiEndpointType;
 	cacheable?: boolean;
 	validateTurnstileToken?: boolean;
+	validateAccessToken?: boolean;
 	pathRules?: {
 		[path: string]: {
-			validateTurnstileToken: boolean;
+			cacheable?: boolean;
+			validateTurnstileToken?: boolean;
+			validateAccessToken?: boolean;
 		};
 	};
 }
 
-export enum EndpointType {
+export enum ApiEndpointType {
 	AWS_LAMBDA_FUNCTION_URL = 'AWS_LAMBDA_FUNCTION_URL',
 	GCP_CLOUD_RUN_SERVICE_URL = 'GCP_CLOUD_RUN_SERVICE_URL',
 	OTHER = 'OTHER',
 }
 
-// Define environment-specific endpoints
-export type Environment = 'local' | 'dev' | 'prod';
+export type ApiEnvironment = 'local' | 'dev' | 'prod';
 
-// Define environment-specific endpoints
-export const serviceEndpoints = {
+export const apiEndpointsMap = {
 	local: {
 		'/projects': {
 			serviceEndpoint: 'https://7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
-			endpointType: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: true,
+			validateAccessToken: false,
 		},
 		'/auth': {
 			serviceEndpoint: 'https://from-the-hart-auth-915273311819.africa-south1.run.app',
-			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			endpointType: ApiEndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			validateAccessToken: false,
 			pathRules: {
 				'/auth/login': { validateTurnstileToken: true },
 				'/auth/register': { validateTurnstileToken: true },
 				'/auth/forgot-password': { validateTurnstileToken: true },
+				'/auth/resend-verification': { validateAccessToken: true },
 			},
 		},
 	},
 	dev: {
 		'/projects': {
 			serviceEndpoint: 'https://7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
-			endpointType: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: true,
+			validateAccessToken: false,
 		},
 		'/auth': {
 			serviceEndpoint: 'https://from-the-hart-auth-915273311819.africa-south1.run.app',
-			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			endpointType: ApiEndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			validateAccessToken: false,
 			pathRules: {
 				'/auth/login': { validateTurnstileToken: true },
 				'/auth/register': { validateTurnstileToken: true },
@@ -65,12 +71,14 @@ export const serviceEndpoints = {
 	prod: {
 		'/projects': {
 			serviceEndpoint: 'https://27zsxewc6uucq23tpr2erpygki0bwxya.lambda-url.af-south-1.on.aws',
-			endpointType: EndpointType.AWS_LAMBDA_FUNCTION_URL,
+			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: true,
+			validateAccessToken: false,
 		},
 		'/auth': {
 			serviceEndpoint: 'https://from-the-hart-auth-247813151171.africa-south1.run.app',
-			endpointType: EndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			endpointType: ApiEndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			validateAccessToken: false,
 			pathRules: {
 				'/auth/login': { validateTurnstileToken: true },
 				'/auth/register': { validateTurnstileToken: true },
@@ -80,69 +88,77 @@ export const serviceEndpoints = {
 	},
 };
 
-export function getRoutes(environment: string): RouteConfig[] {
-	// Check if the environment is valid, throw an error if not
-	if (!(environment in serviceEndpoints)) {
-		throw new Error(`Invalid environment: ${environment}. Available environments: ${Object.keys(serviceEndpoints).join(', ')}`);
+export function getAllApiRoutes(environment: string): ApiRouteConfig[] {
+	if (!(environment in apiEndpointsMap)) {
+		throw new Error(`Invalid environment: ${environment}. Available environments: ${Object.keys(apiEndpointsMap).join(', ')}`);
 	}
-
-	const endpoints = serviceEndpoints[environment as Environment];
-
+	const endpoints = apiEndpointsMap[environment as ApiEnvironment];
 	return Object.entries(endpoints).map(([path, config]) => {
-		const serviceConfig = config as ServiceEndpointConfig;
-
-		const routeConfig: RouteConfig = {
+		const serviceConfig = config as ApiServiceConfig;
+		const routeConfig: ApiRouteConfig = {
 			path,
 			serviceEndpoint: serviceConfig.serviceEndpoint,
 			endpointType: serviceConfig.endpointType,
 			cacheable: serviceConfig.cacheable ?? false,
 			validateTurnstileToken: serviceConfig.validateTurnstileToken ?? false,
+			validateAccessToken: serviceConfig.validateAccessToken ?? true,
 		};
-
 		return routeConfig;
 	});
 }
 
-export function getServiceEndpoint(path: string, environment: string): string {
-	const route = getRouteForPath(path, environment);
+export function getApiServiceUrl(path: string, environment: string): string {
+	const route = resolveApiRouteConfig(path, environment);
 	return route.serviceEndpoint;
 }
 
-export function getRouteForPath(path: string, environment: string): RouteConfig {
-	// Get the raw endpoints configuration
-	if (!(environment in serviceEndpoints)) {
-		throw new Error(`Invalid environment: ${environment}. Available environments: ${Object.keys(serviceEndpoints).join(', ')}`);
+function getApiBaseConfig(path: string, environment: string): { endpointConfig: ApiServiceConfig; pathRule?: Record<string, any> } {
+	const endpoints = apiEndpointsMap[environment as ApiEnvironment];
+	const baseRoutePath = Object.keys(endpoints).find((routePath) => path.startsWith(routePath) && (routePath !== '/' || path === '/'));
+	if (!baseRoutePath) return { endpointConfig: {} as ApiServiceConfig };
+	const endpointConfig = endpoints[baseRoutePath as keyof typeof endpoints] as ApiServiceConfig;
+	const pathRule = endpointConfig.pathRules?.[path];
+	return { endpointConfig, pathRule };
+}
+
+function shouldValidateAccessToken(path: string, environment: string): boolean {
+	const { endpointConfig, pathRule } = getApiBaseConfig(path, environment);
+	if (!endpointConfig) return true;
+	if (pathRule?.validateAccessToken !== undefined) return pathRule.validateAccessToken;
+	return endpointConfig.validateAccessToken ?? true;
+}
+
+function shouldValidateTurnstileToken(path: string, environment: string): boolean {
+	const { endpointConfig, pathRule } = getApiBaseConfig(path, environment);
+	if (!endpointConfig) return false;
+	if (pathRule?.validateTurnstileToken !== undefined) return pathRule.validateTurnstileToken;
+	return endpointConfig.validateTurnstileToken ?? false;
+}
+
+function isRouteCacheable(path: string, environment: string): boolean {
+	const { endpointConfig, pathRule } = getApiBaseConfig(path, environment);
+	if (!endpointConfig) return false;
+	if (pathRule?.cacheable !== undefined) return pathRule.cacheable;
+	return endpointConfig.cacheable ?? false;
+}
+
+export function resolveApiRouteConfig(path: string, environment: string): ApiRouteConfig {
+	if (!(environment in apiEndpointsMap)) {
+		throw new Error(`Invalid environment: ${environment}. Available environments: ${Object.keys(apiEndpointsMap).join(', ')}`);
 	}
-
-	const endpoints = serviceEndpoints[environment as Environment];
-
-	// Find the matching base route
-	const baseRoutePath = Object.keys(endpoints).find(
-		(routePath) =>
-			path.startsWith(routePath) &&
-			// For the default route, only match if it's exactly '/' to avoid matching everything
-			(routePath !== '/' || path === '/'),
-	);
-
+	const endpoints = apiEndpointsMap[environment as ApiEnvironment];
+	const baseRoutePath = Object.keys(endpoints).find((routePath) => path.startsWith(routePath) && (routePath !== '/' || path === '/'));
 	if (!baseRoutePath) {
 		throw new Error(`No route found for path: ${path}`);
 	}
-
-	const endpointConfig = endpoints[baseRoutePath as keyof typeof endpoints] as ServiceEndpointConfig;
-
-	// Create a RouteConfig without pathRules
-	const route: RouteConfig = {
+	const endpointConfig = endpoints[baseRoutePath as keyof typeof endpoints] as ApiServiceConfig;
+	const route: ApiRouteConfig = {
 		path: baseRoutePath,
 		serviceEndpoint: endpointConfig.serviceEndpoint,
 		endpointType: endpointConfig.endpointType,
-		cacheable: endpointConfig.cacheable ?? false,
-		validateTurnstileToken: endpointConfig.validateTurnstileToken ?? false,
+		cacheable: isRouteCacheable(path, environment),
+		validateTurnstileToken: shouldValidateTurnstileToken(path, environment),
+		validateAccessToken: shouldValidateAccessToken(path, environment),
 	};
-
-	// Apply path-specific rules if they exist
-	if (endpointConfig.pathRules && endpointConfig.pathRules[path]) {
-		route.validateTurnstileToken = endpointConfig.pathRules[path].validateTurnstileToken;
-	}
-
 	return route;
 }
