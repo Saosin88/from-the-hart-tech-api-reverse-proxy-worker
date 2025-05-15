@@ -75,6 +75,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	let response: Response;
 	let errorFlag = false;
 	try {
+		console.log('API Request:', JSON.stringify(apiRequest));
 		response = await fetch(apiRequest);
 
 		if (!response.ok) {
