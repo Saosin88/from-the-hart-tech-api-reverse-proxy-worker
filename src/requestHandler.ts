@@ -29,12 +29,26 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		const turnstileToken = request.headers.get('x-cf-turnstile-token');
 
 		if (!turnstileToken) {
-			return addCorsHeaders(request, new Response('Turnstile token required', { status: 403 }), config);
+			return addCorsHeaders(
+				request,
+				new Response(JSON.stringify({ error: 'Turnstile token required' }), {
+					status: 403,
+					headers: { 'Content-Type': 'application/json' },
+				}),
+				config,
+			);
 		}
 		const clientIP = request.headers.get('cf-connecting-ip') || '';
 		const isValid = await validateTurnstileToken(turnstileToken, config.cloudflareTurnstileSecretKey, clientIP);
 		if (!isValid) {
-			return addCorsHeaders(request, new Response('Invalid Turnstile token', { status: 403 }), config);
+			return addCorsHeaders(
+				request,
+				new Response(JSON.stringify({ error: 'Invalid Turnstile token' }), {
+					status: 403,
+					headers: { 'Content-Type': 'application/json' },
+				}),
+				config,
+			);
 		}
 	}
 
