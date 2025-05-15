@@ -1,9 +1,11 @@
 import { getApiServiceUrl } from './routes';
+import { getGoogleIdToken } from './gcp-auth';
 
 async function verifyAccessToken(
 	request: Request,
 	environment: string,
 	cache: Cache,
+	config: any
 ): Promise<{ valid: boolean; status: number; message: string }> {
 	const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
 	if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -31,9 +33,13 @@ async function verifyAccessToken(
 
 	const serviceUrl = getApiServiceUrl('/auth', environment);
 	const verifyUrl = serviceUrl + '/auth/verify-access-token';
+	const googleToken = await getGoogleIdToken(config.googleServiceAccountemail, config.googleServiceAccountKey, verifyUrl, cache);
 	const verifyReq = new Request(verifyUrl, {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
+		headers: { 
+			'Content-Type': 'application/json',
+			'X-Serverless-Authorization': `Bearer ${googleToken}`
+		},
 		body: JSON.stringify({ accessToken: token }),
 	});
 
@@ -64,7 +70,7 @@ async function verifyAccessToken(
 }
 
 export async function handleAccessTokenValidation(request: Request, config: any, cache: Cache): Promise<Response | null> {
-	const result = await verifyAccessToken(request, config.environment, cache);
+	const result = await verifyAccessToken(request, config.environment, cache, config);
 	if (!result.valid) {
 		return new Response(JSON.stringify({ error: { message: result.message } }), {
 			status: result.status,
