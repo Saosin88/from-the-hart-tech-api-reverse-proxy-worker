@@ -1,11 +1,12 @@
 import { handleCacheCheck, handleCacheStore } from './caching';
 import { addCorsHeaders, handleCors } from './cors';
-import { resolveApiRouteConfig, ApiEndpointType } from './routes';
+import { resolveApiRouteConfig, ApiEndpointType, getAllApiRoutes } from './routes';
 import { Config } from './types';
 import { signRequest } from './aws-auth';
 import { getGoogleIdToken } from './gcp-auth';
 import { handleTurnstileValidation } from './cloudflare-turnstile';
 import { handleAccessTokenValidation } from './verify-access-token';
+import { renderApiIndexPage } from './htmlIndexPage';
 
 export async function handleRequest(request: Request, config: Config, ctx: ExecutionContext): Promise<Response> {
 	const corsResult = handleCors(request, config);
@@ -16,6 +17,17 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	const url = new URL(request.url);
 	const path = url.pathname;
 	const query = url.search;
+
+	if (path === '/') {
+		return renderApiIndexPage(config);
+	}
+
+	const baseApiPaths = getAllApiRoutes(config.environment).map((r) => r.path);
+	const normalizedPath = path.endsWith('/') && path.length > 1 ? path.slice(0, -1) : path;
+	if (baseApiPaths.includes(normalizedPath) && normalizedPath !== '/') {
+		const origin = url.origin;
+		return Response.redirect(`${origin}${normalizedPath}/documentation`, 302);
+	}
 
 	let route;
 	try {
