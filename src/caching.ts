@@ -1,4 +1,4 @@
-export function checkCache(cacheableRoute: boolean, request: Request): boolean {
+function checkCache(cacheableRoute: boolean, request: Request): boolean {
 	if (!cacheableRoute) {
 		return false;
 	}
@@ -18,7 +18,7 @@ export function checkCache(cacheableRoute: boolean, request: Request): boolean {
 	return true;
 }
 
-export function shouldCache(cacheableRoute: boolean, response: Response): boolean {
+function shouldCache(cacheableRoute: boolean, response: Response): boolean {
 	if (!cacheableRoute) {
 		return false;
 	}
@@ -30,4 +30,30 @@ export function shouldCache(cacheableRoute: boolean, response: Response): boolea
 	}
 
 	return true;
+}
+
+export async function handleCacheCheck(route: any, request: Request, cache: Cache, cacheKey: Request): Promise<Response | null> {
+	const doCacheCheck = checkCache(route.cacheable, request);
+	if (doCacheCheck) {
+		const response = await cache.match(cacheKey);
+		if (response) {
+			return response;
+		}
+	}
+	return null;
+}
+
+export async function handleCacheStore(
+	route: any,
+	corsResponse: Response,
+	errorFlag: boolean,
+	cache: Cache,
+	cacheKey: Request,
+	ctx: ExecutionContext,
+) {
+	const shouldCacheResponse = shouldCache(route.cacheable, corsResponse);
+	if (shouldCacheResponse && !errorFlag) {
+		const responseToCache = corsResponse.clone();
+		ctx.waitUntil(cache.put(cacheKey, responseToCache));
+	}
 }

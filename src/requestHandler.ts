@@ -1,11 +1,11 @@
-import { checkCache, shouldCache } from './caching';
+import { handleCacheCheck, handleCacheStore } from './caching';
 import { addCorsHeaders, handleCors } from './cors';
 import { resolveApiRouteConfig, ApiEndpointType } from './routes';
 import { Config } from './types';
 import { signRequest } from './aws-auth';
 import { getGoogleIdToken } from './gcp-auth';
-import { validateTurnstileToken } from './cloudflare-turnstile';
-import { verifyAccessToken } from './verify-access-token';
+import { handleTurnstileValidation } from './cloudflare-turnstile';
+import { handleAccessTokenValidation } from './verify-access-token';
 
 export async function handleRequest(request: Request, config: Config, ctx: ExecutionContext): Promise<Response> {
 	const corsResult = handleCors(request, config);
@@ -26,29 +26,18 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	}
 
 	if (route.validateTurnstileToken) {
-		const turnstileToken = request.headers.get('x-cf-turnstile-token');
-
-		if (!turnstileToken) {
-			return addCorsHeaders(
-				request,
-				new Response(JSON.stringify({ error: 'Turnstile token required' }), {
-					status: 403,
-					headers: { 'Content-Type': 'application/json' },
-				}),
-				config,
-			);
+		const turnstileResponse = await handleTurnstileValidation(request, config);
+		if (turnstileResponse) {
+			return addCorsHeaders(request, turnstileResponse, config);
 		}
-		const clientIP = request.headers.get('cf-connecting-ip') || '';
-		const isValid = await validateTurnstileToken(turnstileToken, config.cloudflareTurnstileSecretKey, clientIP);
-		if (!isValid) {
-			return addCorsHeaders(
-				request,
-				new Response(JSON.stringify({ error: 'Invalid Turnstile token' }), {
-					status: 403,
-					headers: { 'Content-Type': 'application/json' },
-				}),
-				config,
-			);
+	}
+
+	const cache = caches.default;
+
+	if (route.validateAccessToken) {
+		const accessTokenResponse = await handleAccessTokenValidation(request, config, cache);
+		if (accessTokenResponse) {
+			return addCorsHeaders(request, accessTokenResponse, config);
 		}
 	}
 
@@ -56,23 +45,10 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	const apiUrl = serviceEndpoint + path + query;
 
 	const cacheKey = new Request(apiUrl, { method: request.method });
-	const cache = caches.default;
 
-	if (route.validateAccessToken) {
-		const result = await verifyAccessToken(request, config.environment, cache);
-		if (!result.valid) {
-			return addCorsHeaders(request, new Response(result.message, { status: result.status }), config);
-		}
-	}
-
-	const doCacheCheck = checkCache(route.cacheable, request);
-
-	let response;
-	if (doCacheCheck) {
-		response = await cache.match(cacheKey);
-		if (response) {
-			return addCorsHeaders(request, response, config);
-		}
+	const cacheResponse = await handleCacheCheck(route, request, cache, cacheKey);
+	if (cacheResponse) {
+		return addCorsHeaders(request, cacheResponse, config);
 	}
 
 	let apiRequest = new Request(apiUrl, request);
@@ -84,6 +60,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		apiRequest.headers.set('X-Serverless-Authorization', `Bearer ${googleToken}`);
 	}
 
+	let response: Response;
 	let errorFlag = false;
 	try {
 		response = await fetch(apiRequest);
@@ -97,13 +74,6 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 
 	const corsResponse = addCorsHeaders(request, response, config);
 
-	const shouldCacheResponse = shouldCache(route.cacheable, corsResponse);
-
-	if (shouldCacheResponse && !errorFlag) {
-		const responseToCache = corsResponse.clone();
-		ctx.waitUntil(cache.put(cacheKey, responseToCache));
-		return corsResponse;
-	} else {
-		return corsResponse;
-	}
+	await handleCacheStore(route, corsResponse, errorFlag, cache, cacheKey, ctx);
+	return corsResponse;
 }

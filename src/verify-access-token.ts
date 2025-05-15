@@ -1,6 +1,6 @@
 import { getApiServiceUrl } from './routes';
 
-export async function verifyAccessToken(
+async function verifyAccessToken(
 	request: Request,
 	environment: string,
 	cache: Cache,
@@ -61,4 +61,15 @@ export async function verifyAccessToken(
 	} else {
 		return { valid: false, status: resp.status, message: 'Token validation failed' };
 	}
+}
+
+export async function handleAccessTokenValidation(request: Request, config: any, cache: Cache): Promise<Response | null> {
+	const result = await verifyAccessToken(request, config.environment, cache);
+	if (!result.valid) {
+		return new Response(JSON.stringify({ error: { message: result.message } }), {
+			status: result.status,
+			headers: { 'Content-Type': 'application/json' },
+		});
+	}
+	return null;
 }
