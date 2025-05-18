@@ -33,15 +33,15 @@ export type ApiEnvironment = 'local' | 'dev' | 'prod';
 export const apiEndpointsMap = {
 	local: {
 		'/projects': {
-			// serviceEndpoint: 'https://7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
-			serviceEndpoint: 'http://localhost:8080',
+			serviceEndpoint: 'https://7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
+			// serviceEndpoint: 'http://localhost:8080',
 			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: true,
 			validateAccessToken: false,
 		},
 		'/auth': {
-			// serviceEndpoint: 'https://from-the-hart-auth-915273311819.africa-south1.run.app',
-			serviceEndpoint: 'http://localhost:8080',
+			serviceEndpoint: 'https://from-the-hart-auth-915273311819.africa-south1.run.app',
+			// serviceEndpoint: 'http://localhost:8080',
 			endpointType: ApiEndpointType.GCP_CLOUD_RUN_SERVICE_URL,
 			validateAccessToken: false,
 			pathRules: {

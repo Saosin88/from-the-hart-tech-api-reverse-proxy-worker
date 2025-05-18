@@ -1,4 +1,4 @@
-import { handleCacheCheck, handleCacheStore } from './caching';
+// import { handleCacheCheck, handleCacheStore } from './caching';
 import { addCorsHeaders, handleCors } from './cors';
 import { resolveApiRouteConfig, ApiEndpointType, getAllApiRoutes } from './routes';
 import { Config } from './types';
@@ -56,12 +56,12 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	const serviceEndpoint = route.serviceEndpoint;
 	const apiUrl = serviceEndpoint + path + query;
 
-	const cacheKey = new Request(apiUrl, { method: request.method });
+	// const cacheKey = new Request(apiUrl, { method: request.method });
 
-	const cacheResponse = await handleCacheCheck(route, request, cache, cacheKey);
-	if (cacheResponse) {
-		return addCorsHeaders(request, cacheResponse, config);
-	}
+	// const cacheResponse = await handleCacheCheck(route, request, cache, cacheKey);
+	// if (cacheResponse) {
+	// 	return addCorsHeaders(request, cacheResponse, config);
+	// }
 
 	let apiRequest = new Request(apiUrl, request);
 
@@ -75,7 +75,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	let response: Response;
 	let errorFlag = false;
 	try {
-		response = await fetch(apiRequest);
+		response = await fetch(apiRequest, { cf: { cacheEverything: true } });
 
 		if (!response.ok) {
 			errorFlag = true;
@@ -86,6 +86,6 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 
 	const corsResponse = addCorsHeaders(request, response, config);
 
-	await handleCacheStore(route, corsResponse, errorFlag, cache, cacheKey, ctx);
+	// await handleCacheStore(route, corsResponse, errorFlag, cache, cacheKey, ctx);
 	return corsResponse;
 }
