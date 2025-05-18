@@ -80,7 +80,8 @@ async function getCachedToken(cache: Cache, cacheKey: Request): Promise<string |
 		const fiveMinutesInSeconds = 5 * 60;
 
 		return tokenData.expiresAt > now + fiveMinutesInSeconds ? tokenData.token : null;
-	} catch {
+	} catch (error) {
+		console.error('Failed to parse cached token:', error);
 		return null;
 	}
 }
@@ -99,7 +100,7 @@ async function cacheToken(cache: Cache, cacheKey: Request, token: string, expire
 		});
 
 		await cache.put(cacheKey, response);
-	} catch {
-		// Non-critical error, continue without caching
+	} catch (error) {
+		console.error('Failed to cache token:', error);
 	}
 }
