@@ -1,4 +1,3 @@
-// import { handleCacheCheck, handleCacheStore } from './caching';
 import { addCorsHeaders, handleCors } from './cors';
 import { resolveApiRouteConfig, ApiEndpointType, getAllApiRoutes } from './routes';
 import { Config } from './types';
@@ -63,13 +62,6 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	const serviceEndpoint = route.serviceEndpoint;
 	const apiUrl = serviceEndpoint + path + query;
 
-	// const cacheKey = new Request(apiUrl, { method: request.method });
-
-	// const cacheResponse = await handleCacheCheck(route, request, cache, cacheKey);
-	// if (cacheResponse) {
-	// 	return addCorsHeaders(request, cacheResponse, config);
-	// }
-
 	let apiRequest = new Request(apiUrl, request);
 
 	if (route.endpointType === ApiEndpointType.AWS_LAMBDA_FUNCTION_URL) {
@@ -80,20 +72,16 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	}
 
 	let response: Response;
-	let errorFlag = false;
 	try {
 		response = await fetch(apiRequest, { cf: { cacheEverything: true } });
-		console.log('Response status:', response.status);
-
-		if (!response.ok) {
-			errorFlag = true;
-		}
 	} catch (error) {
-		return new Response('API Gateway unavailable', { status: 503 });
+		return new Response(JSON.stringify({ error: { message: 'API Gateway unavailable' } }), {
+			status: 503,
+			headers: { 'Content-Type': 'application/json' },
+		});
 	}
 
 	const corsResponse = addCorsHeaders(request, response, config);
 
-	// await handleCacheStore(route, corsResponse, errorFlag, cache, cacheKey, ctx);
 	return corsResponse;
 }

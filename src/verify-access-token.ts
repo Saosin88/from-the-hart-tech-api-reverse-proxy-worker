@@ -10,12 +10,14 @@ export async function handleAccessTokenValidation(request: Request, config: any,
 	if (!token) {
 		return false;
 	}
-	const serviceUrl = getApiServiceUrl('/auth', config.environment);
-	const verifyUrl = serviceUrl + '/auth/verify-access-token';
 
-	const cacheKey = new Request(verifyUrl + '?accessToken=' + encodeURIComponent(token), { method: 'GET' });
+	const cacheUrl = `https://cache/verify-access-token?accessToken=${encodeURIComponent(token)}`;
+	const cacheKey = new Request(cacheUrl, { method: 'GET' });
+
 	let resp = await cache.match(cacheKey);
 	if (!resp) {
+		const serviceUrl = getApiServiceUrl('/auth', config.environment);
+		const verifyUrl = serviceUrl + '/auth/verify-access-token';
 		const googleToken = await getGoogleIdToken(config.googleServiceAccountemail, config.googleServiceAccountKey, verifyUrl, cache);
 
 		const verifyReq = new Request(verifyUrl, {

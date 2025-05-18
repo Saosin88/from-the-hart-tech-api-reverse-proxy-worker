@@ -4,7 +4,8 @@ export async function getGoogleIdToken(
 	cloudRunServiceUrl: string,
 	cache: Cache,
 ): Promise<string> {
-	const cacheKey = `google-id-token:${serviceAccountEmail}:${cloudRunServiceUrl}`;
+	const cacheUrl = `https://cache/google-id-token?email=${encodeURIComponent(serviceAccountEmail)}&audience=${encodeURIComponent(cloudRunServiceUrl)}`;
+	const cacheKey = new Request(cacheUrl, { method: 'GET' });
 	const cachedToken = await getCachedToken(cache, cacheKey);
 	if (cachedToken) {
 		console.log('Cache hit for Google ID token');
@@ -69,9 +70,9 @@ export async function getGoogleIdToken(
 	}
 }
 
-async function getCachedToken(cache: Cache, cacheKey: string): Promise<string | null> {
+async function getCachedToken(cache: Cache, cacheKey: Request): Promise<string | null> {
 	try {
-		const cachedData = await cache.match(new Request(`https://cache/${cacheKey}`));
+		const cachedData = await cache.match(cacheKey);
 		if (!cachedData) return null;
 
 		const tokenData = (await cachedData.json()) as { token: string; expiresAt: number };
@@ -84,7 +85,7 @@ async function getCachedToken(cache: Cache, cacheKey: string): Promise<string | 
 	}
 }
 
-async function cacheToken(cache: Cache, cacheKey: string, token: string, expiresIn: number): Promise<void> {
+async function cacheToken(cache: Cache, cacheKey: Request, token: string, expiresIn: number): Promise<void> {
 	try {
 		const now = Math.floor(Date.now() / 1000);
 		const expiresAt = now + expiresIn;
@@ -97,7 +98,7 @@ async function cacheToken(cache: Cache, cacheKey: string, token: string, expires
 			},
 		});
 
-		await cache.put(new Request(`https://cache/${cacheKey}`), response);
+		await cache.put(cacheKey, response);
 	} catch {
 		// Non-critical error, continue without caching
 	}
