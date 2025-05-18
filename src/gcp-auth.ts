@@ -2,11 +2,12 @@ export async function getGoogleIdToken(
 	serviceAccountEmail: string,
 	serviceAccountBase64PrivateKey: string,
 	cloudRunServiceUrl: string,
-	cache: Cache
+	cache: Cache,
 ): Promise<string> {
 	const cacheKey = `google-id-token:${serviceAccountEmail}:${cloudRunServiceUrl}`;
 	const cachedToken = await getCachedToken(cache, cacheKey);
 	if (cachedToken) {
+		console.log('Cache hit for Google ID token');
 		return cachedToken;
 	}
 
