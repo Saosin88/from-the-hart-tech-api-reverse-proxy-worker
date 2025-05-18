@@ -47,9 +47,16 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	const cache = caches.default;
 
 	if (route.validateAccessToken) {
-		const accessTokenResponse = await handleAccessTokenValidation(request, config, cache);
-		if (accessTokenResponse) {
-			return addCorsHeaders(request, accessTokenResponse, config);
+		const isValid = await handleAccessTokenValidation(request, config, cache);
+		if (!isValid) {
+			return addCorsHeaders(
+				request,
+				new Response(JSON.stringify({ error: { message: 'Unauthorized' } }), {
+					status: 401,
+					headers: { 'Content-Type': 'application/json' },
+				}),
+				config,
+			);
 		}
 	}
 
@@ -76,6 +83,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	let errorFlag = false;
 	try {
 		response = await fetch(apiRequest, { cf: { cacheEverything: true } });
+		console.log('Response status:', response.status);
 
 		if (!response.ok) {
 			errorFlag = true;
