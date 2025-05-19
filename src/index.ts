@@ -1,5 +1,5 @@
 import { createConfig } from './config';
-import { handleRequest } from './requestHandler';
+import { handleRequest } from './request-handler';
 import { Env } from './types';
 
 export default {

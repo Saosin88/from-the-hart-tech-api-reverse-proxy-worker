@@ -1,12 +1,9 @@
 import { getApiServiceUrl } from './routes';
 import { getGoogleIdToken } from './gcp-auth';
+import { getBearerToken } from './utils';
 
 export async function handleAccessTokenValidation(request: Request, config: any, cache: Cache): Promise<boolean> {
-	const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
-	if (!authHeader || !authHeader.startsWith('Bearer ')) {
-		return false;
-	}
-	const token = authHeader.substring('Bearer '.length).trim();
+	const token = getBearerToken(request);
 	if (!token) {
 		return false;
 	}

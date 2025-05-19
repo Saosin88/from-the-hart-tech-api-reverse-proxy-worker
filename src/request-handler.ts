@@ -5,17 +5,17 @@ import { signRequest } from './aws-auth';
 import { getGoogleIdToken } from './gcp-auth';
 import { handleTurnstileValidation } from './cloudflare-turnstile';
 import { handleAccessTokenValidation } from './verify-access-token';
-import { renderApiIndexPage } from './htmlIndexPage';
+import { renderApiIndexPage } from './html-index-page';
+import { checkRateLimit } from './rate-limiter';
 
-export async function handleRequest(request: Request, config: Config, ctx: ExecutionContext): Promise<Response> {
-	// const ipAddress = request.headers.get('cf-connecting-ip') || '';
-	// const { success } = await env.MY_RATE_LIMITER.limit({ key: ipAddress });
-	// if (!success) {
-	// 	return new Response(JSON.stringify({ error: { message: 'Rate limit exceeded' } }), {
-	// 		status: 429,
-	// 		headers: { 'Content-Type': 'application/json' },
-	// 	});
-	// }
+export async function handleRequest(request: Request, config: Config, env: any): Promise<Response> {
+	const { success } = await checkRateLimit(request, env);
+	if (!success) {
+		return new Response(JSON.stringify({ error: { message: 'Rate limit exceeded' } }), {
+			status: 429,
+			headers: { 'Content-Type': 'application/json' },
+		});
+	}
 
 	const corsResult = handleCors(request, config);
 	if (corsResult) {
