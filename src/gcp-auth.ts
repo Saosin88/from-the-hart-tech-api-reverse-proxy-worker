@@ -8,7 +8,6 @@ export async function getGoogleIdToken(
 	const cacheKey = new Request(cacheUrl, { method: 'GET' });
 	const cachedToken = await getCachedToken(cache, cacheKey);
 	if (cachedToken) {
-		console.log('Cache hit for Google ID token');
 		return cachedToken;
 	}
 

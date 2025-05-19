@@ -18,7 +18,6 @@ export async function checkRateLimit(request: Request, env: RateLimitEnv): Promi
 		const ip = request.headers.get('cf-connecting-ip') || '';
 		rateLimitKey = `${path}|${ip}`;
 	}
-	console.log(env.RATE_LIMITER);
 
 	return await env.RATE_LIMITER.limit({ key: rateLimitKey });
 }

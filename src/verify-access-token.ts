@@ -35,8 +35,6 @@ export async function handleAccessTokenValidation(request: Request, config: any,
 		} catch {
 			return false;
 		}
-	} else {
-		console.log('Cache hit for access token validation');
 	}
 	if (!resp.ok) return false;
 	const data: { data?: { valid?: boolean } } = await resp.json();
