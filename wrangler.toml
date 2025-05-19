@@ -12,6 +12,11 @@ command = "npm run build"
 # Local environment configuration
 [env.local]
 vars = { ENVIRONMENT = "local" }
+[[env.local.unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }
 
 # Dev environment configuration
 [env.dev]
@@ -19,6 +24,11 @@ vars = { ENVIRONMENT = "dev" }
 [[env.dev.routes]]
 pattern = "dev-api.fromthehart.tech"
 custom_domain = true
+[[env.dev.unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }
 
 # Prod environment configuration
 [env.prod]
@@ -26,12 +36,11 @@ vars = { ENVIRONMENT = "prod" }
 [[env.prod.routes]]
 pattern = "api.fromthehart.tech"
 custom_domain = true
-
-[observability.logs]
-enabled = true
-
-[[unsafe.bindings]]
+[[env.prod.unsafe.bindings]]
 name = "RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1001"
-simple = { limit = 10, period = 60 }
+simple = { limit = 20, period = 60 }
+
+[observability.logs]
+enabled = true

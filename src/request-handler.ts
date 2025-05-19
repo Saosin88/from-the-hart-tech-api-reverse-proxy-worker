@@ -8,7 +8,7 @@ import { handleAccessTokenValidation } from './verify-access-token';
 import { renderApiIndexPage } from './html-index-page';
 import { checkRateLimit } from './rate-limiter';
 
-export async function handleRequest(request: Request, config: Config, env: any): Promise<Response> {
+export async function handleRequest(request: Request, env: any, config: Config): Promise<Response> {
 	const { success } = await checkRateLimit(request, env);
 	if (!success) {
 		return new Response(JSON.stringify({ error: { message: 'Rate limit exceeded' } }), {
