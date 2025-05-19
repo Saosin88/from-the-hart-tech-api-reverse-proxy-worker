@@ -12,7 +12,7 @@ export function createConfig(env: Env): Config {
 		environment: environment,
 		securityHeaders: {
 			cacheControl: 'no-store',
-			contentSecurityPolicy: `frame-ancestors 'none'; default-src 'none'; script-src 'self' https://static.cloudflareinsights.com;; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'`,
+			contentSecurityPolicy: `frame-ancestors 'none'; default-src 'none'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'`,
 			contentType: 'application/json',
 			strictTransportSecurity: 'max-age=63072000; includeSubDomains; preload',
 			xContentTypeOptions: 'nosniff',
