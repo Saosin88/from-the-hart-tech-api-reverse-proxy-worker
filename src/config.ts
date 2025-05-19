@@ -12,7 +12,7 @@ export function createConfig(env: Env): Config {
 		environment: environment,
 		securityHeaders: {
 			cacheControl: 'no-store',
-			contentSecurityPolicy: "frame-ancestors 'none'; default-src 'none'",
+			contentSecurityPolicy: `frame-ancestors 'none'; default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self';`,
 			contentType: 'application/json',
 			strictTransportSecurity: 'max-age=63072000; includeSubDomains; preload',
 			xContentTypeOptions: 'nosniff',
