@@ -84,7 +84,11 @@ export async function handleRequest(request: Request, env: any, config: Config):
 
 	let response: Response;
 	try {
-		response = await fetch(apiRequest, { cf: { cacheEverything: true } });
+		const fetchOptions: RequestInit = {};
+		if (route.cacheable) {
+			fetchOptions.cf = { cacheEverything: true };
+		}
+		response = await fetch(apiRequest, fetchOptions);
 		return addHeaders(request, response, config);
 	} catch (error) {
 		return addHeaders(
