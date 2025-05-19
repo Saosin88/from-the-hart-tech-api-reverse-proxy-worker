@@ -37,4 +37,5 @@ export interface Config {
 	environment: string;
 	securityHeaders: SecurityHeadersConfig;
 	corsHeaders: CorsHeadersConfig;
+	maxBodySize: number;
 }

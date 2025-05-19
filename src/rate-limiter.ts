@@ -21,3 +21,14 @@ export async function checkRateLimit(request: Request, env: RateLimitEnv): Promi
 
 	return await env.RATE_LIMITER.limit({ key: rateLimitKey });
 }
+
+export async function enforceRateLimit(request: Request, env: any): Promise<Response | undefined> {
+	const { success } = await checkRateLimit(request, env);
+	if (!success) {
+		return new Response(JSON.stringify({ error: { message: 'Rate limit exceeded' } }), {
+			status: 429,
+			headers: { 'Content-Type': 'application/json' },
+		});
+	}
+	return undefined;
+}

@@ -20,41 +20,29 @@ export function handleCors(request: Request, config: Config): Response | null {
 				},
 			});
 		}
-		return addHeaders(
-			request,
-			new Response(JSON.stringify({ error: { message: 'CORS preflight not allowed' } }), {
-				status: 403,
-				headers: { 'Content-Type': 'application/json' },
-			}),
-			config,
-		);
+		return new Response(JSON.stringify({ error: { message: 'CORS preflight not allowed' } }), {
+			status: 403,
+			headers: { 'Content-Type': 'application/json' },
+		});
 	}
 
 	if (!cors.allowedMethods.includes(method)) {
-		return addHeaders(
-			request,
-			new Response(JSON.stringify({ error: { message: 'Method Not Allowed' } }), {
-				status: 405,
-				headers: {
-					Allow: cors.allowedMethods.join(', '),
-					'Content-Type': 'application/json',
-				},
-			}),
-			config,
-		);
+		return new Response(JSON.stringify({ error: { message: 'Method Not Allowed' } }), {
+			status: 405,
+			headers: {
+				Allow: cors.allowedMethods.join(', '),
+				'Content-Type': 'application/json',
+			},
+		});
 	}
 
 	if (origin && !cors.allowedOrigins.includes(origin)) {
-		return addHeaders(
-			request,
-			new Response(JSON.stringify({ error: { message: 'Forbidden - Origin Not Allowed' } }), {
-				status: 403,
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}),
-			config,
-		);
+		return new Response(JSON.stringify({ error: { message: 'Forbidden - Origin Not Allowed' } }), {
+			status: 403,
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
 	}
 
 	return null;

@@ -2,10 +2,10 @@ import { getApiServiceUrl } from './routes';
 import { getGoogleIdToken } from './gcp-auth';
 import { getBearerToken } from './utils';
 
-export async function handleAccessTokenValidation(request: Request, config: any, cache: Cache): Promise<boolean> {
+export async function handleAccessTokenValidation(request: Request, config: any, cache: Cache): Promise<Response | null> {
 	const token = getBearerToken(request);
 	if (!token) {
-		return false;
+		return unauthorizedResponse();
 	}
 
 	const cacheUrl = `https://cache/verify-access-token?accessToken=${encodeURIComponent(token)}`;
@@ -33,10 +33,18 @@ export async function handleAccessTokenValidation(request: Request, config: any,
 				await cache.put(cacheKey, respToCache);
 			}
 		} catch {
-			return false;
+			return unauthorizedResponse();
 		}
 	}
-	if (!resp.ok) return false;
+	if (!resp.ok) return unauthorizedResponse();
 	const data: { data?: { valid?: boolean } } = await resp.json();
-	return !!data.data?.valid;
+	if (!data.data?.valid) return unauthorizedResponse();
+	return null;
+}
+
+export function unauthorizedResponse(): Response {
+	return new Response(JSON.stringify({ error: { message: 'Unauthorized' } }), {
+		status: 401,
+		headers: { 'Content-Type': 'application/json' },
+	});
 }

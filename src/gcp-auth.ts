@@ -1,3 +1,11 @@
+import { Config } from './types';
+
+export async function addGoogleIdTokenToRequest(request: Request, config: Config, cache: Cache): Promise<Request> {
+	const googleToken = await getGoogleIdToken(config.googleServiceAccountemail, config.googleServiceAccountKey, request.url, cache);
+	request.headers.set('X-Serverless-Authorization', `Bearer ${googleToken}`);
+	return request;
+}
+
 export async function getGoogleIdToken(
 	serviceAccountEmail: string,
 	serviceAccountBase64PrivateKey: string,

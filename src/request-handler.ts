@@ -1,25 +1,28 @@
 import { addHeaders, handleCors } from './response-headers';
 import { resolveApiRouteConfig, ApiEndpointType, getAllApiRoutes } from './routes';
 import { Config } from './types';
-import { signRequest } from './aws-auth';
-import { getGoogleIdToken } from './gcp-auth';
+import { addAwsSignatureToRequest } from './aws-auth';
+import { addGoogleIdTokenToRequest } from './gcp-auth';
 import { handleTurnstileValidation } from './cloudflare-turnstile';
 import { handleAccessTokenValidation } from './verify-access-token';
 import { renderApiIndexPage } from './html-index-page';
-import { checkRateLimit } from './rate-limiter';
+import { enforceRequestSizeLimit } from './size-limit';
+import { enforceRateLimit } from './rate-limiter';
 
 export async function handleRequest(request: Request, env: any, config: Config): Promise<Response> {
-	const { success } = await checkRateLimit(request, env);
-	if (!success) {
-		return new Response(JSON.stringify({ error: { message: 'Rate limit exceeded' } }), {
-			status: 429,
-			headers: { 'Content-Type': 'application/json' },
-		});
+	const sizeLimitResponse = await enforceRequestSizeLimit(request, config);
+	if (sizeLimitResponse) {
+		return addHeaders(request, sizeLimitResponse, config);
+	}
+
+	const rateLimitResponse = await enforceRateLimit(request, env);
+	if (rateLimitResponse) {
+		return addHeaders(request, rateLimitResponse, config);
 	}
 
 	const corsResult = handleCors(request, config);
 	if (corsResult) {
-		return corsResult;
+		return addHeaders(request, corsResult, config);
 	}
 
 	const url = new URL(request.url);
@@ -62,16 +65,9 @@ export async function handleRequest(request: Request, env: any, config: Config):
 	const cache = caches.default;
 
 	if (route.validateAccessToken) {
-		const isValid = await handleAccessTokenValidation(request, config, cache);
-		if (!isValid) {
-			return addHeaders(
-				request,
-				new Response(JSON.stringify({ error: { message: 'Unauthorized' } }), {
-					status: 401,
-					headers: { 'Content-Type': 'application/json' },
-				}),
-				config,
-			);
+		const accessTokenResponse = await handleAccessTokenValidation(request, config, cache);
+		if (accessTokenResponse) {
+			return addHeaders(request, accessTokenResponse, config);
 		}
 	}
 
@@ -81,23 +77,23 @@ export async function handleRequest(request: Request, env: any, config: Config):
 	let apiRequest = new Request(apiUrl, request);
 
 	if (route.endpointType === ApiEndpointType.AWS_LAMBDA_FUNCTION_URL) {
-		apiRequest = await signRequest(apiRequest, config.awsAccessKeyId, config.awsSecretAccessKey);
+		apiRequest = await addAwsSignatureToRequest(apiRequest, config);
 	} else if (route.endpointType === ApiEndpointType.GCP_CLOUD_RUN_SERVICE_URL) {
-		const googleToken = await getGoogleIdToken(config.googleServiceAccountemail, config.googleServiceAccountKey, apiRequest.url, cache);
-		apiRequest.headers.set('X-Serverless-Authorization', `Bearer ${googleToken}`);
+		apiRequest = await addGoogleIdTokenToRequest(apiRequest, config, cache);
 	}
 
 	let response: Response;
 	try {
 		response = await fetch(apiRequest, { cf: { cacheEverything: true } });
+		return addHeaders(request, response, config);
 	} catch (error) {
-		return new Response(JSON.stringify({ error: { message: 'API Gateway unavailable' } }), {
-			status: 503,
-			headers: { 'Content-Type': 'application/json' },
-		});
+		return addHeaders(
+			request,
+			new Response(JSON.stringify({ error: { message: 'API Gateway unavailable' } }), {
+				status: 503,
+				headers: { 'Content-Type': 'application/json' },
+			}),
+			config,
+		);
 	}
-
-	const corsResponse = addHeaders(request, response, config);
-
-	return corsResponse;
 }

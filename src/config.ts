@@ -30,5 +30,6 @@ export function createConfig(env: Env): Config {
 			maxAge: 3600,
 			vary: 'Origin',
 		},
+		maxBodySize: 1, // 1MB
 	};
 }
