@@ -27,7 +27,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	const query = url.search;
 
 	if (path === '/') {
-		return renderApiIndexPage(config);
+		return addHeaders(request, renderApiIndexPage(config), config);
 	}
 
 	const baseApiPaths = getAllApiRoutes(config.environment).map((r) => r.path);
