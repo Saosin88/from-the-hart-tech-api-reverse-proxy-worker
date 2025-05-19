@@ -56,7 +56,7 @@ export const apiEndpointsMap = {
 		'/projects': {
 			serviceEndpoint: 'https://7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
 			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
-			cacheable: true,
+			cacheable: false,
 			validateAccessToken: false,
 		},
 		'/auth': {
