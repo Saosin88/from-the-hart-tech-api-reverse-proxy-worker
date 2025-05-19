@@ -22,7 +22,7 @@ export function createConfig(env: Env): Config {
 			referrerPolicy: 'no-referrer',
 		},
 		corsHeaders: {
-			allowedOrigins: ['http://localhost:3000', 'https://dev.fromthehart.tech', 'https://www.fromthehart.tech'],
+			allowedOrigins: environment === 'prod' ? ['https://www.fromthehart.tech'] : ['http://localhost:3000', 'https://dev.fromthehart.tech'],
 			allowedMethods: ['GET', 'POST', 'OPTIONS'],
 			allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With', 'Accept', 'Origin', 'x-cf-turnstile-token'],
 			exposeHeaders: ['Content-Length', 'Content-Type', 'Cache-Control'],
