@@ -1,4 +1,4 @@
-import { addCorsHeaders, handleCors } from './cors';
+import { addHeaders, handleCors } from './response-headers';
 import { resolveApiRouteConfig, ApiEndpointType, getAllApiRoutes } from './routes';
 import { Config } from './types';
 import { signRequest } from './aws-auth';
@@ -8,6 +8,15 @@ import { handleAccessTokenValidation } from './verify-access-token';
 import { renderApiIndexPage } from './htmlIndexPage';
 
 export async function handleRequest(request: Request, config: Config, ctx: ExecutionContext): Promise<Response> {
+	// const ipAddress = request.headers.get('cf-connecting-ip') || '';
+	// const { success } = await env.MY_RATE_LIMITER.limit({ key: ipAddress });
+	// if (!success) {
+	// 	return new Response(JSON.stringify({ error: { message: 'Rate limit exceeded' } }), {
+	// 		status: 429,
+	// 		headers: { 'Content-Type': 'application/json' },
+	// 	});
+	// }
+
 	const corsResult = handleCors(request, config);
 	if (corsResult) {
 		return corsResult;
@@ -33,13 +42,20 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		route = resolveApiRouteConfig(path, config.environment);
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : 'Unknown routing error';
-		return addCorsHeaders(request, new Response(`Not Found: ${errorMessage}`, { status: 404 }), config);
+		return addHeaders(
+			request,
+			new Response(JSON.stringify({ error: { message: `Not Found: ${errorMessage}` } }), {
+				status: 404,
+				headers: { 'Content-Type': 'application/json' },
+			}),
+			config,
+		);
 	}
 
 	if (route.validateTurnstileToken) {
 		const turnstileResponse = await handleTurnstileValidation(request, config);
 		if (turnstileResponse) {
-			return addCorsHeaders(request, turnstileResponse, config);
+			return addHeaders(request, turnstileResponse, config);
 		}
 	}
 
@@ -48,7 +64,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 	if (route.validateAccessToken) {
 		const isValid = await handleAccessTokenValidation(request, config, cache);
 		if (!isValid) {
-			return addCorsHeaders(
+			return addHeaders(
 				request,
 				new Response(JSON.stringify({ error: { message: 'Unauthorized' } }), {
 					status: 401,
@@ -81,7 +97,7 @@ export async function handleRequest(request: Request, config: Config, ctx: Execu
 		});
 	}
 
-	const corsResponse = addCorsHeaders(request, response, config);
+	const corsResponse = addHeaders(request, response, config);
 
 	return corsResponse;
 }

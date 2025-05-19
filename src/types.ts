@@ -7,17 +7,34 @@ export interface Env {
 	ENVIRONMENT?: string;
 }
 
+export interface SecurityHeadersConfig {
+	cacheControl: string;
+	contentSecurityPolicy: string;
+	contentType: string;
+	strictTransportSecurity: string;
+	xContentTypeOptions: string;
+	xFrameOptions: string;
+	permissionsPolicy: string;
+	referrerPolicy: string;
+}
+
+export interface CorsHeadersConfig {
+	allowedOrigins: string[];
+	allowedMethods: string[];
+	allowedHeaders: string[];
+	exposeHeaders: string[];
+	allowCredentials: boolean;
+	maxAge: number;
+	vary: string;
+}
+
 export interface Config {
-	corsAllowedOrigins: string[];
-	corsAllowedMethods: string[];
-	corsAllowedHeaders: string[];
-	corsExposeHeaders: string[];
-	corsAllowCredentials: boolean;
-	corsMaxAge: number;
 	awsAccessKeyId: string;
 	awsSecretAccessKey: string;
 	googleServiceAccountemail: string;
 	googleServiceAccountKey: string;
 	cloudflareTurnstileSecretKey: string;
 	environment: string;
+	securityHeaders: SecurityHeadersConfig;
+	corsHeaders: CorsHeadersConfig;
 }
