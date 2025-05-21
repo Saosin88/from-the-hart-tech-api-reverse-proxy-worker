@@ -37,7 +37,7 @@ export function renderApiIndexPage(config: Config): Response {
 <body>
 	<div class="header">
 		<h1>From The Hart API Gateway</h1>
-		<p style="margin:0;font-size:1.1rem;">Multi-Cloud API Gateway &amp; Documentation Index</p>
+		<p style="margin:0;font-size:1.1rem;">API Gateway &amp; Documentation Index</p>
 	</div>
 	<div class="card">
 		<h2 style="margin-top:0;">API Documentation</h2>
