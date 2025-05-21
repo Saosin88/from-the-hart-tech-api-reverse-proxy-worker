@@ -1,10 +1,19 @@
+import { Config } from './types';
+
+export async function addGoogleIdTokenToRequest(request: Request, config: Config, cache: Cache): Promise<Request> {
+	const googleToken = await getGoogleIdToken(config.googleServiceAccountemail, config.googleServiceAccountKey, request.url, cache);
+	request.headers.set('X-Serverless-Authorization', `Bearer ${googleToken}`);
+	return request;
+}
+
 export async function getGoogleIdToken(
 	serviceAccountEmail: string,
 	serviceAccountBase64PrivateKey: string,
 	cloudRunServiceUrl: string,
-	cache: Cache
+	cache: Cache,
 ): Promise<string> {
-	const cacheKey = `google-id-token:${serviceAccountEmail}:${cloudRunServiceUrl}`;
+	const cacheUrl = `https://cache/google-id-token?email=${encodeURIComponent(serviceAccountEmail)}&audience=${encodeURIComponent(cloudRunServiceUrl)}`;
+	const cacheKey = new Request(cacheUrl, { method: 'GET' });
 	const cachedToken = await getCachedToken(cache, cacheKey);
 	if (cachedToken) {
 		return cachedToken;
@@ -68,9 +77,9 @@ export async function getGoogleIdToken(
 	}
 }
 
-async function getCachedToken(cache: Cache, cacheKey: string): Promise<string | null> {
+async function getCachedToken(cache: Cache, cacheKey: Request): Promise<string | null> {
 	try {
-		const cachedData = await cache.match(new Request(`https://cache/${cacheKey}`));
+		const cachedData = await cache.match(cacheKey);
 		if (!cachedData) return null;
 
 		const tokenData = (await cachedData.json()) as { token: string; expiresAt: number };
@@ -78,12 +87,13 @@ async function getCachedToken(cache: Cache, cacheKey: string): Promise<string | 
 		const fiveMinutesInSeconds = 5 * 60;
 
 		return tokenData.expiresAt > now + fiveMinutesInSeconds ? tokenData.token : null;
-	} catch {
+	} catch (error) {
+		console.error('Failed to parse cached token:', error);
 		return null;
 	}
 }
 
-async function cacheToken(cache: Cache, cacheKey: string, token: string, expiresIn: number): Promise<void> {
+async function cacheToken(cache: Cache, cacheKey: Request, token: string, expiresIn: number): Promise<void> {
 	try {
 		const now = Math.floor(Date.now() / 1000);
 		const expiresAt = now + expiresIn;
@@ -96,8 +106,8 @@ async function cacheToken(cache: Cache, cacheKey: string, token: string, expires
 			},
 		});
 
-		await cache.put(new Request(`https://cache/${cacheKey}`), response);
-	} catch {
-		// Non-critical error, continue without caching
+		await cache.put(cacheKey, response);
+	} catch (error) {
+		console.error('Failed to cache token:', error);
 	}
 }
