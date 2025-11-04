@@ -25,6 +25,7 @@ interface ApiServiceConfig {
 export enum ApiEndpointType {
 	AWS_LAMBDA_FUNCTION_URL = 'AWS_LAMBDA_FUNCTION_URL',
 	GCP_CLOUD_RUN_SERVICE_URL = 'GCP_CLOUD_RUN_SERVICE_URL',
+	AZURE_CONTAINER_APPS_SERVICE_URL = 'AZURE_CONTAINER_APPS_SERVICE_URL',
 	OTHER = 'OTHER',
 }
 
@@ -51,6 +52,12 @@ export const apiEndpointsMap = {
 				'/auth/resend-verification': { validateAccessToken: true },
 			},
 		},
+		'/media': {
+			serviceEndpoint: 'https://from-the-hart-media-dev.icygrass-b3a8eb51.southafricanorth.azurecontainerapps.io',
+			endpointType: ApiEndpointType.AZURE_CONTAINER_APPS_SERVICE_URL,
+			cacheable: false,
+			validateAccessToken: false,
+		},
 	},
 	dev: {
 		'/projects': {
@@ -69,6 +76,12 @@ export const apiEndpointsMap = {
 				'/auth/forgot-password': { validateTurnstileToken: true },
 				'/auth/resend-verification': { validateAccessToken: true },
 			},
+		},
+		'/media': {
+			serviceEndpoint: 'https://from-the-hart-media-dev.icygrass-b3a8eb51.southafricanorth.azurecontainerapps.io',
+			endpointType: ApiEndpointType.AZURE_CONTAINER_APPS_SERVICE_URL,
+			cacheable: false,
+			validateAccessToken: false,
 		},
 	},
 	prod: {
