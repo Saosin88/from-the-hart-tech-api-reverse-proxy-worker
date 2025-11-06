@@ -11,6 +11,7 @@ import { enforceRequestSizeLimit } from './size-limit';
 import { enforceRateLimit } from './rate-limiter';
 
 export async function handleRequest(request: Request, env: any, config: Config): Promise<Response> {
+	console.log("request received 1");
 	const sizeLimitResponse = await enforceRequestSizeLimit(request, config);
 	if (sizeLimitResponse) {
 		return addHeaders(request, sizeLimitResponse, config);
@@ -77,17 +78,23 @@ export async function handleRequest(request: Request, env: any, config: Config):
 
 	let apiRequest = new Request(apiUrl, request);
 
+	console.log("request received 2");
+
 	if (route.endpointType === ApiEndpointType.AWS_LAMBDA_FUNCTION_URL) {
 		apiRequest = await addAwsSignatureToRequest(apiRequest, config);
 	} else if (route.endpointType === ApiEndpointType.GCP_CLOUD_RUN_SERVICE_URL) {
 		apiRequest = await addGoogleIdTokenToRequest(apiRequest, config, cache);
 	} else if (route.endpointType === ApiEndpointType.AZURE_CONTAINER_APPS_SERVICE_URL) {
+		console.log("request received 3");
 		const incomingAuth = apiRequest.headers.get('Authorization');
 		if (incomingAuth) {
 			apiRequest.headers.set('X-From-The-Hart-Authorization', incomingAuth.trim());
 		}
+		console.log("request received 4");
 		apiRequest.headers.delete('Authorization');
+		console.log("request received 5");
 		apiRequest = await addAzureTokenToRequest(apiRequest, config, cache);
+		console.log("request received 6");
 	}
 
 	let response: Response;
