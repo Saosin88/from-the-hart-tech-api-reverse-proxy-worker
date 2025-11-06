@@ -19,13 +19,6 @@ export async function getAzureAccessToken(
 	audience: string,
 	cache: Cache,
 ): Promise<string> {
-	console.log('Azure auth attempt:', {
-		clientId: clientId?.substring(0, 8) + '...',
-		tenantId: tenantId?.substring(0, 8) + '...',
-		audience,
-		hasSecret: !!clientSecret,
-	});
-
 	const cacheUrl = `https://cache/azure-access-token?client_id=${encodeURIComponent(clientId)}`;
 	const cacheKey = new Request(cacheUrl, { method: 'GET' });
 
