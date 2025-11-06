@@ -134,6 +134,11 @@ export async function addAwsSignatureToRequest(request: Request, config: Config)
 		`SignedHeaders=${signedHeadersString}, ` +
 		`Signature=${signature}`;
 
+	const incomingAuth = request.headers.get('Authorization');
+	if (incomingAuth) {
+		headers.set('X-From-The-Hart-Authorization', incomingAuth.trim());
+	}
+
 	headers.set('Authorization', authHeader);
 
 	return new Request(requestToSign, {

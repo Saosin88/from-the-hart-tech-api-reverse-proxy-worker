@@ -82,11 +82,6 @@ export async function handleRequest(request: Request, env: any, config: Config):
 	} else if (route.endpointType === ApiEndpointType.GCP_CLOUD_RUN_SERVICE_URL) {
 		apiRequest = await addGoogleIdTokenToRequest(apiRequest, config, cache);
 	} else if (route.endpointType === ApiEndpointType.AZURE_CONTAINER_APPS_SERVICE_URL) {
-		const incomingAuth = apiRequest.headers.get('Authorization');
-		if (incomingAuth) {
-			apiRequest.headers.set('X-From-The-Hart-Authorization', incomingAuth.trim());
-		}
-		apiRequest.headers.delete('Authorization');
 		apiRequest = await addAzureTokenToRequest(apiRequest, config, cache);
 	}
 

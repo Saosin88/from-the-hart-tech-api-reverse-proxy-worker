@@ -8,6 +8,13 @@ export async function addAzureTokenToRequest(request: Request, config: Config, c
 		config.azureAcaAudience,
 		cache,
 	);
+
+	const incomingAuth = request.headers.get('Authorization');
+	if (incomingAuth) {
+		request.headers.set('X-From-The-Hart-Authorization', incomingAuth.trim());
+	}
+	request.headers.delete('Authorization');
+
 	request.headers.set('Authorization', `Bearer ${azureToken}`);
 	return request;
 }
