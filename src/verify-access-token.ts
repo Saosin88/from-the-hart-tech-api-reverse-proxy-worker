@@ -35,6 +35,8 @@ export async function handleAccessTokenValidation(request: Request, config: any,
 		} catch {
 			return unauthorizedResponse();
 		}
+	} else {
+		console.debug('Found cached key for user Access Token', cacheKey.url);
 	}
 	if (!resp.ok) return unauthorizedResponse();
 	const data: { data?: { valid?: boolean } } = await resp.json();

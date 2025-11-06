@@ -24,6 +24,7 @@ export async function getAzureAccessToken(
 
 	const cachedToken = await getCachedToken(cache, cacheKey);
 	if (cachedToken) {
+		console.debug('Found cached key for Azure', cacheKey.url);
 		return cachedToken;
 	}
 

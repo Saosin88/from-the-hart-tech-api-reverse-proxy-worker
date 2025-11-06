@@ -16,6 +16,7 @@ export async function getGoogleIdToken(
 	const cacheKey = new Request(cacheUrl, { method: 'GET' });
 	const cachedToken = await getCachedToken(cache, cacheKey);
 	if (cachedToken) {
+		console.debug('Found cached key for GCP', cacheKey.url);
 		return cachedToken;
 	}
 
