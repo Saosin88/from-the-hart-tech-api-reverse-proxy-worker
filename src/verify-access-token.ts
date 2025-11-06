@@ -8,7 +8,8 @@ export async function handleAccessTokenValidation(request: Request, config: any,
 		return unauthorizedResponse();
 	}
 
-	const cacheUrl = `https://cache/verify-access-token?accessToken=${encodeURIComponent(token)}`;
+	const tokenHash = await sha256Hex(token);
+	const cacheUrl = `https://cache/verify-access-token?tokenHash=${tokenHash}`;
 	const cacheKey = new Request(cacheUrl, { method: 'GET' });
 
 	let resp = await cache.match(cacheKey);
@@ -49,4 +50,14 @@ export function unauthorizedResponse(): Response {
 		status: 401,
 		headers: { 'Content-Type': 'application/json' },
 	});
+}
+
+async function sha256Hex(input: string): Promise<string> {
+	const enc = new TextEncoder();
+	const data = enc.encode(input);
+	const hash = await crypto.subtle.digest('SHA-256', data);
+	const bytes = new Uint8Array(hash);
+	return Array.from(bytes)
+		.map((b) => b.toString(16).padStart(2, '0'))
+		.join('');
 }
