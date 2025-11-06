@@ -56,7 +56,10 @@ export const apiEndpointsMap = {
 			serviceEndpoint: 'https://from-the-hart-media-dev.icygrass-b3a8eb51.southafricanorth.azurecontainerapps.io',
 			endpointType: ApiEndpointType.AZURE_CONTAINER_APPS_SERVICE_URL,
 			cacheable: false,
-			validateAccessToken: false,
+			validateAccessToken: true,
+			pathRules: {
+				'/media/health': { validateAccessToken: false },
+			},
 		},
 	},
 	dev: {
@@ -81,7 +84,10 @@ export const apiEndpointsMap = {
 			serviceEndpoint: 'https://from-the-hart-media-dev.icygrass-b3a8eb51.southafricanorth.azurecontainerapps.io',
 			endpointType: ApiEndpointType.AZURE_CONTAINER_APPS_SERVICE_URL,
 			cacheable: false,
-			validateAccessToken: false,
+			validateAccessToken: true,
+			pathRules: {
+				'/media/health': { validateAccessToke: false },
+			},
 		},
 	},
 	prod: {

@@ -8,6 +8,10 @@ export function createConfig(env: Env): Config {
 		awsSecretAccessKey: env.AWS_SECRET_ACCESS_KEY,
 		googleServiceAccountemail: env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
 		googleServiceAccountKey: env.GOOGLE_SERVICE_ACCOUNT_KEY,
+		azureClientId: env.AZURE_CLIENT_ID,
+		azureClientSecret: env.AZURE_CLIENT_SECRET,
+		azureTenantId: env.AZURE_TENANT_ID,
+		azureAcaAudience: env.AZURE_ACA_AUDIENCE,
 		cloudflareTurnstileSecretKey: env.CLOUDFLARE_TURNSTILE_SECRET_KEY,
 		environment: environment,
 		securityHeaders: {

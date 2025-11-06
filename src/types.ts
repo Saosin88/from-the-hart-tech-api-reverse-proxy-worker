@@ -3,6 +3,10 @@ export interface Env {
 	AWS_SECRET_ACCESS_KEY: string;
 	GOOGLE_SERVICE_ACCOUNT_EMAIL: string;
 	GOOGLE_SERVICE_ACCOUNT_KEY: string;
+	AZURE_CLIENT_ID: string;
+	AZURE_CLIENT_SECRET: string;
+	AZURE_TENANT_ID: string;
+	AZURE_ACA_AUDIENCE: string;
 	CLOUDFLARE_TURNSTILE_SECRET_KEY: string;
 	ENVIRONMENT?: string;
 }
@@ -33,6 +37,10 @@ export interface Config {
 	awsSecretAccessKey: string;
 	googleServiceAccountemail: string;
 	googleServiceAccountKey: string;
+	azureClientId: string;
+	azureClientSecret: string;
+	azureTenantId: string;
+	azureAcaAudience: string;
 	cloudflareTurnstileSecretKey: string;
 	environment: string;
 	securityHeaders: SecurityHeadersConfig;

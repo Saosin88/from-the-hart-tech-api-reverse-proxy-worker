@@ -3,6 +3,7 @@ import { resolveApiRouteConfig, ApiEndpointType, getAllApiRoutes } from './route
 import { Config } from './types';
 import { addAwsSignatureToRequest } from './aws-auth';
 import { addGoogleIdTokenToRequest } from './gcp-auth';
+import { addAzureTokenToRequest } from './azure-auth';
 import { handleTurnstileValidation } from './cloudflare-turnstile';
 import { handleAccessTokenValidation } from './verify-access-token';
 import { renderApiIndexPage } from './html-index-page';
@@ -80,6 +81,13 @@ export async function handleRequest(request: Request, env: any, config: Config):
 		apiRequest = await addAwsSignatureToRequest(apiRequest, config);
 	} else if (route.endpointType === ApiEndpointType.GCP_CLOUD_RUN_SERVICE_URL) {
 		apiRequest = await addGoogleIdTokenToRequest(apiRequest, config, cache);
+	} else if (route.endpointType === ApiEndpointType.AZURE_CONTAINER_APPS_SERVICE_URL) {
+		const incomingAuth = apiRequest.headers.get('Authorization');
+		if (incomingAuth) {
+			apiRequest.headers.set('X-From-The-Hart-Authorization', incomingAuth.trim());
+		}
+		apiRequest.headers.delete('Authorization');
+		apiRequest = await addAzureTokenToRequest(apiRequest, config, cache);
 	}
 
 	let response: Response;
