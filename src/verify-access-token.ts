@@ -29,7 +29,7 @@ export async function handleAccessTokenValidation(request: Request, config: any,
 
 		try {
 			resp = await fetch(verifyReq);
-			if (resp.ok) {
+			if (resp.ok || resp.status === 401) {
 				const respToCache = resp.clone();
 				await cache.put(cacheKey, respToCache);
 			}
