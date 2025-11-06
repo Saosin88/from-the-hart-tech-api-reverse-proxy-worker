@@ -17,30 +17,32 @@ export async function handleRequest(request: Request, env: any, config: Config):
 		return addHeaders(request, sizeLimitResponse, config);
 	}
 
+	console.log("request received 1.2");
 	const rateLimitResponse = await enforceRateLimit(request, env);
 	if (rateLimitResponse) {
 		return addHeaders(request, rateLimitResponse, config);
 	}
-
+	console.log("request received 1.3");
 	const corsResult = handleCors(request, config);
 	if (corsResult) {
 		return addHeaders(request, corsResult, config);
 	}
-
+	console.log("request received 1.4");
 	const url = new URL(request.url);
 	const path = url.pathname;
 	const query = url.search;
-
+	console.log("request received 1.5");
 	if (path === '/') {
 		return addHeaders(request, renderApiIndexPage(config), config);
 	}
-
+	console.log("request received 1.6");
 	const baseApiPaths = getAllApiRoutes(config.environment).map((r) => r.path);
 	const normalizedPath = path.endsWith('/') && path.length > 1 ? path.slice(0, -1) : path;
 	if (baseApiPaths.includes(normalizedPath) && normalizedPath !== '/') {
 		const origin = url.origin;
 		return Response.redirect(`${origin}${normalizedPath}/documentation`, 302);
 	}
+	console.log("request received 1.7");
 
 	let route;
 	try {
@@ -57,12 +59,16 @@ export async function handleRequest(request: Request, env: any, config: Config):
 		);
 	}
 
+	console.log("request received 1.8");
+
 	if (route.validateTurnstileToken) {
 		const turnstileResponse = await handleTurnstileValidation(request, config);
 		if (turnstileResponse) {
 			return addHeaders(request, turnstileResponse, config);
 		}
 	}
+
+	console.log("request received 1.9");
 
 	const cache = caches.default;
 
@@ -72,6 +78,8 @@ export async function handleRequest(request: Request, env: any, config: Config):
 			return addHeaders(request, accessTokenResponse, config);
 		}
 	}
+
+	console.log("request received 1.10");
 
 	const serviceEndpoint = route.serviceEndpoint;
 	const apiUrl = serviceEndpoint + path + query;
