@@ -86,7 +86,7 @@ export const apiEndpointsMap = {
 			cacheable: false,
 			validateAccessToken: true,
 			pathRules: {
-				'/media/health': { validateAccessToke: false },
+				'/media/health': { validateAccessToken: false },
 			},
 		},
 	},
