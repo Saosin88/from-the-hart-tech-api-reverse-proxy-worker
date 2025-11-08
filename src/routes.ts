@@ -34,7 +34,7 @@ export type ApiEnvironment = 'local' | 'dev' | 'prod';
 export const apiEndpointsMap = {
 	local: {
 		'/projects': {
-			serviceEndpoint: 'https://7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
+			serviceEndpoint: 'https://5qybidw3nvdfh7nvk6o5vupfea0isebt.lambda-url.af-south-1.on.aws',
 			// serviceEndpoint: 'http://localhost:8080',
 			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: true,
@@ -64,7 +64,7 @@ export const apiEndpointsMap = {
 	},
 	dev: {
 		'/projects': {
-			serviceEndpoint: 'https://7bu6jnh7kljhlykmi6iiuwqoe40yupit.lambda-url.af-south-1.on.aws',
+			serviceEndpoint: 'https://5qybidw3nvdfh7nvk6o5vupfea0isebt.lambda-url.af-south-1.on.aws',
 			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: true,
 			validateAccessToken: false,
