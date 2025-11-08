@@ -52,13 +52,13 @@ export const apiEndpointsMap = {
 				'/auth/resend-verification': { validateAccessToken: true },
 			},
 		},
-		'/media': {
-			serviceEndpoint: 'https://from-the-hart-media-dev.icygrass-b3a8eb51.southafricanorth.azurecontainerapps.io',
-			endpointType: ApiEndpointType.AZURE_CONTAINER_APPS_SERVICE_URL,
+		'/storage': {
+			serviceEndpoint: 'https://ilghefhjqb2xeqstcok3gc2lai0zznmp.lambda-url.af-south-1.on.aws',
+			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: false,
 			validateAccessToken: true,
 			pathRules: {
-				'/media/health': { validateAccessToken: false },
+				'/storage/health': { validateAccessToken: false },
 			},
 		},
 	},
@@ -80,13 +80,13 @@ export const apiEndpointsMap = {
 				'/auth/resend-verification': { validateAccessToken: true },
 			},
 		},
-		'/media': {
-			serviceEndpoint: 'https://from-the-hart-media-dev.icygrass-b3a8eb51.southafricanorth.azurecontainerapps.io',
-			endpointType: ApiEndpointType.AZURE_CONTAINER_APPS_SERVICE_URL,
+		'/storage': {
+			serviceEndpoint: 'https://ilghefhjqb2xeqstcok3gc2lai0zznmp.lambda-url.af-south-1.on.aws',
+			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: false,
 			validateAccessToken: true,
 			pathRules: {
-				'/media/health': { validateAccessToken: false },
+				'/storage/health': { validateAccessToken: false },
 			},
 		},
 	},
