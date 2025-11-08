@@ -59,6 +59,7 @@ export const apiEndpointsMap = {
 			validateAccessToken: true,
 			pathRules: {
 				'/storage/health': { validateAccessToken: false },
+				'/storage/documentation': { validateAccessToken: false },
 			},
 		},
 	},
