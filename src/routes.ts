@@ -53,7 +53,7 @@ export const apiEndpointsMap = {
 			},
 		},
 		'/storage': {
-			serviceEndpoint: 'https://ilghefhjqb2xeqstcok3gc2lai0zznmp.lambda-url.af-south-1.on.aws',
+			serviceEndpoint: 'https://rfum4jcajv7q2m4tghkk7x7yp40kyunj.lambda-url.af-south-1.on.aws',
 			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: false,
 			validateAccessToken: true,
@@ -82,7 +82,7 @@ export const apiEndpointsMap = {
 			},
 		},
 		'/storage': {
-			serviceEndpoint: 'https://ilghefhjqb2xeqstcok3gc2lai0zznmp.lambda-url.af-south-1.on.aws',
+			serviceEndpoint: 'https://rfum4jcajv7q2m4tghkk7x7yp40kyunj.lambda-url.af-south-1.on.aws',
 			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: false,
 			validateAccessToken: true,
