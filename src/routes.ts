@@ -56,7 +56,7 @@ export const apiEndpointsMap = {
 			serviceEndpoint: 'https://rfum4jcajv7q2m4tghkk7x7yp40kyunj.lambda-url.af-south-1.on.aws',
 			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: false,
-			validateAccessToken: true,
+			validateAccessToken: false,
 			pathRules: {
 				'/storage/health': { validateAccessToken: false },
 				'/storage/documentation': { validateAccessToken: false },
@@ -85,7 +85,7 @@ export const apiEndpointsMap = {
 			serviceEndpoint: 'https://rfum4jcajv7q2m4tghkk7x7yp40kyunj.lambda-url.af-south-1.on.aws',
 			endpointType: ApiEndpointType.AWS_LAMBDA_FUNCTION_URL,
 			cacheable: false,
-			validateAccessToken: true,
+			validateAccessToken: false,
 			pathRules: {
 				'/storage/health': { validateAccessToken: false },
 				'/storage/documentation': { validateAccessToken: false },
