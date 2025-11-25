@@ -105,7 +105,7 @@ export async function addAwsSignatureToRequest(request: Request, config: Config)
 
 	const signedHeaders = ['host', 'x-amz-content-sha256', 'x-amz-date'];
 
-	if (headers.has('content-type')) {
+	if (headers.has('content-type') && method !== 'GET' && method !== 'HEAD') {
 		signedHeaders.push('content-type');
 	}
 
