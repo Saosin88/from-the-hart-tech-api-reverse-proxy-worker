@@ -55,17 +55,16 @@ function createCanonicalRequest(method: string, url: URL, headers: Headers, sign
 		})
 		.join('&');
 
-	const canonicalHeadersArray = signedHeaderNames.map((headerName) => {
+	const sortedHeaderNames = signedHeaderNames.map((h) => h.toLowerCase()).sort();
+
+	const canonicalHeadersArray = sortedHeaderNames.map((headerName) => {
 		const headerValue = headers.get(headerName) || '';
-		return `${headerName.toLowerCase()}:${headerValue.trim().replace(/\s+/g, ' ')}`;
+		return `${headerName}:${headerValue.trim().replace(/\s+/g, ' ')}`;
 	});
 
 	const canonicalHeaders = canonicalHeadersArray.join('\n') + '\n';
 
-	const signedHeaders = signedHeaderNames
-		.map((h) => h.toLowerCase())
-		.sort()
-		.join(';');
+	const signedHeaders = sortedHeaderNames.join(';');
 
 	return [method, canonicalUri, canonicalQueryString, canonicalHeaders, signedHeaders, payloadHash].join('\n');
 }
@@ -148,6 +147,7 @@ export async function addAwsSignatureToRequest(request: Request, config: Config)
 
 	if (bodyBuffer && method !== 'GET' && method !== 'HEAD') {
 		requestInit.body = bodyBuffer;
+		(requestInit as any).duplex = 'half';
 	}
 
 	return new Request(url, requestInit);
