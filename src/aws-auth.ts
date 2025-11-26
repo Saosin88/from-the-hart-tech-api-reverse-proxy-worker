@@ -141,7 +141,14 @@ export async function addAwsSignatureToRequest(request: Request, config: Config)
 
 	headers.set('Authorization', authHeader);
 
-	return new Request(requestToSign, {
+	const requestInit: RequestInit = {
+		method,
 		headers,
-	});
+	};
+
+	if (bodyBuffer && method !== 'GET' && method !== 'HEAD') {
+		requestInit.body = bodyBuffer;
+	}
+
+	return new Request(url, requestInit);
 }
