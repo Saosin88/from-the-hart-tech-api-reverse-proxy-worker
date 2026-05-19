@@ -84,7 +84,7 @@ Two distinct caching mechanisms:
 
 **Edge Cache:** Response caching at the Cloudflare edge network for cacheable routes. Enabled via `cf.cacheEverything: true` on the `fetch()` to the backend service. The cached response is returned directly by Cloudflare — the request never reaches the Gateway. Currently only the `/projects` route uses this (24h TTL).
 
-**Internal Cache:** The Gateway's use of the Cloudflare Cache API to store its own computational results for reuse. Stores two things: ID Token validation responses (keyed by SHA-256 hash of the token) and Provider Credentials (keyed by service account). Reduces latency to backend services by avoiding redundant validation and token minting. Populated by `verify-access-token.ts`, `gcp-auth.ts`, and `azure-auth.ts`. Cleared implicitly by Cache-Control `max-age`.
+**Internal Cache:** The Gateway's use of the Cloudflare Cache API to store its own computational results for reuse. Stores two things: ID Token validation responses (keyed by SHA-256 hash of the token) and Provider Credentials (keyed by service account). Reduces latency to backend services by avoiding redundant validation and token minting. Populated by `verify-id-token.ts`, `gcp-auth.ts`, and `azure-auth.ts`. Cleared implicitly by Cache-Control `max-age`.
 
 ### Rate Limiting
 
@@ -104,7 +104,7 @@ Generated per-request depending on the route's `ApiEndpointType`. Cached in the 
 
 ### ID Token Validation
 
-Validates the ID Token JWT by proxying to Auth Service's `/auth/verify-access-token` endpoint. The validation response is cached in the Internal Cache with a 5-minute safety buffer — tokens are considered expired 5 minutes before their actual expiry to avoid serving near-expired results.
+Validates the ID Token JWT by proxying to Auth Service's `/auth/verify-id-token` endpoint. The validation response is cached in the Internal Cache with a 5-minute safety buffer — tokens are considered expired 5 minutes before their actual expiry to avoid serving near-expired results.
 
 ## Flow Diagram
 
@@ -139,7 +139,7 @@ src/
 ├── aws-auth.ts           # AWS SigV4 signing
 ├── gcp-auth.ts           # GCP ID token generation
 ├── azure-auth.ts         # Azure token generation
-├── verify-access-token.ts # JWT validation with caching
+├── verify-id-token.ts # JWT validation with caching
 ├── cloudflare-turnstile.ts # Turnstile token validation
 ├── rate-limiter.ts       # Rate limiting
 ├── size-limit.ts         # Request body size enforcement

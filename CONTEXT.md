@@ -30,4 +30,4 @@ The collective term for the Gateway's own authentication credentials used to aut
 
 ## Flagged Ambiguities
 
-- **`accessToken` in code vs. ID Token in glossary:** The code in verify-access-token uses `accessToken` for variable names and request body fields. Should be `idToken`. → See [TODO.md](../TODO.md#34-gateway--rename-accesstoken-to-idtoken-in-verify-access-tokents).
+- *(None currently — all resolved.)*

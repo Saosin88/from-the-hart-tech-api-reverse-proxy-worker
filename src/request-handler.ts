@@ -5,7 +5,7 @@ import { addAwsSignatureToRequest } from './aws-auth';
 import { addGoogleIdTokenToRequest } from './gcp-auth';
 import { addAzureTokenToRequest } from './azure-auth';
 import { handleTurnstileValidation } from './cloudflare-turnstile';
-import { handleAccessTokenValidation } from './verify-access-token';
+import { handleIdTokenValidation } from './verify-id-token';
 import { renderApiIndexPage } from './html-index-page';
 import { enforceRequestSizeLimit } from './size-limit';
 import { enforceRateLimit } from './rate-limiter';
@@ -66,9 +66,9 @@ export async function handleRequest(request: Request, env: any, config: Config):
 	const cache = caches.default;
 
 	if (route.validateAccessToken) {
-		const accessTokenResponse = await handleAccessTokenValidation(request, config, cache);
-		if (accessTokenResponse) {
-			return addHeaders(request, accessTokenResponse, config);
+		const idTokenResponse = await handleIdTokenValidation(request, config, cache);
+		if (idTokenResponse) {
+			return addHeaders(request, idTokenResponse, config);
 		}
 	}
 

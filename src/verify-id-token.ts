@@ -2,20 +2,20 @@ import { getApiServiceUrl } from './routes';
 import { getGoogleIdToken } from './gcp-auth';
 import { getBearerToken } from './utils';
 
-export async function handleAccessTokenValidation(request: Request, config: any, cache: Cache): Promise<Response | null> {
+export async function handleIdTokenValidation(request: Request, config: any, cache: Cache): Promise<Response | null> {
 	const token = getBearerToken(request);
 	if (!token) {
 		return unauthorizedResponse();
 	}
 
 	const tokenHash = await sha256Hex(token);
-	const cacheUrl = `https://cache/verify-access-token?tokenHash=${tokenHash}`;
+	const cacheUrl = `https://cache/verify-id-token?tokenHash=${tokenHash}`;
 	const cacheKey = new Request(cacheUrl, { method: 'GET' });
 
 	let resp = await cache.match(cacheKey);
 	if (!resp) {
 		const serviceUrl = getApiServiceUrl('/auth', config.environment);
-		const verifyUrl = serviceUrl + '/auth/verify-access-token';
+		const verifyUrl = serviceUrl + '/auth/verify-id-token';
 		const googleToken = await getGoogleIdToken(config.googleServiceAccountemail, config.googleServiceAccountKey, verifyUrl, cache);
 
 		const verifyReq = new Request(verifyUrl, {
@@ -24,7 +24,7 @@ export async function handleAccessTokenValidation(request: Request, config: any,
 				'Content-Type': 'application/json',
 				'X-Serverless-Authorization': `Bearer ${googleToken}`,
 			},
-			body: JSON.stringify({ accessToken: token }),
+			body: JSON.stringify({ idToken: token }),
 		});
 
 		try {
@@ -37,7 +37,7 @@ export async function handleAccessTokenValidation(request: Request, config: any,
 			return unauthorizedResponse();
 		}
 	} else {
-		console.debug('Found cached key for user Access Token', cacheKey.url);
+		console.debug('Found cached key for user ID Token', cacheKey.url);
 	}
 	if (!resp.ok) return unauthorizedResponse();
 	const data: { data?: { valid?: boolean } } = await resp.json();
