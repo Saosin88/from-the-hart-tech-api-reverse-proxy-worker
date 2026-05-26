@@ -60,6 +60,16 @@ export const apiEndpointsMap = {
 			pathRules: {
 				'/storage/health': { validateAccessToken: false },
 				'/storage/documentation': { validateAccessToken: false },
+				'/storage/documentation/openapi.json': { validateAccessToken: false },
+			},
+		},
+		'/identity': {
+			serviceEndpoint: 'http://localhost:8080',
+			endpointType: ApiEndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			validateAccessToken: true,
+			pathRules: {
+				'/identity/health': { validateAccessToken: false },
+				'/identity/documentation': { validateAccessToken: false },
 			},
 		},
 	},
@@ -89,6 +99,16 @@ export const apiEndpointsMap = {
 			pathRules: {
 				'/storage/health': { validateAccessToken: false },
 				'/storage/documentation': { validateAccessToken: false },
+				'/storage/documentation/openapi.json': { validateAccessToken: false },
+			},
+		},
+		'/identity': {
+			serviceEndpoint: 'https://from-the-hart-identity-915273311819.africa-south1.run.app',
+			endpointType: ApiEndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			validateAccessToken: true,
+			pathRules: {
+				'/identity/health': { validateAccessToken: false },
+				'/identity/documentation': { validateAccessToken: false },
 			},
 		},
 	},
@@ -108,6 +128,15 @@ export const apiEndpointsMap = {
 				'/auth/register': { validateTurnstileToken: true },
 				'/auth/forgot-password': { validateTurnstileToken: true },
 				'/auth/resend-verification': { validateAccessToken: true },
+			},
+		},
+		'/identity': {
+			serviceEndpoint: 'https://from-the-hart-identity-247813151171.africa-south1.run.app',
+			endpointType: ApiEndpointType.GCP_CLOUD_RUN_SERVICE_URL,
+			validateAccessToken: true,
+			pathRules: {
+				'/identity/health': { validateAccessToken: false },
+				'/identity/documentation': { validateAccessToken: false },
 			},
 		},
 	},
