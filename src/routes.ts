@@ -70,6 +70,7 @@ export const apiEndpointsMap = {
 			pathRules: {
 				'/identity/health': { validateAccessToken: false },
 				'/identity/documentation': { validateAccessToken: false },
+				'/identity/documentation/*': { validateAccessToken: false },
 			},
 		},
 	},
@@ -109,6 +110,7 @@ export const apiEndpointsMap = {
 			pathRules: {
 				'/identity/health': { validateAccessToken: false },
 				'/identity/documentation': { validateAccessToken: false },
+				'/identity/documentation/*': { validateAccessToken: false },
 			},
 		},
 	},
@@ -137,6 +139,7 @@ export const apiEndpointsMap = {
 			pathRules: {
 				'/identity/health': { validateAccessToken: false },
 				'/identity/documentation': { validateAccessToken: false },
+				'/identity/documentation/*': { validateAccessToken: false },
 			},
 		},
 	},
@@ -171,7 +174,16 @@ function getApiBaseConfig(path: string, environment: string): { endpointConfig: 
 	const baseRoutePath = Object.keys(endpoints).find((routePath) => path.startsWith(routePath) && (routePath !== '/' || path === '/'));
 	if (!baseRoutePath) return { endpointConfig: {} as ApiServiceConfig };
 	const endpointConfig = endpoints[baseRoutePath as keyof typeof endpoints] as ApiServiceConfig;
-	const pathRule = endpointConfig.pathRules?.[path];
+	// Check exact match first, then prefix match (keys ending with */ match any sub-path)
+	let pathRule = endpointConfig.pathRules?.[path];
+	if (!pathRule && endpointConfig.pathRules) {
+		for (const [rulePath, rule] of Object.entries(endpointConfig.pathRules)) {
+			if (rulePath.endsWith('/*') && path.startsWith(rulePath.slice(0, -2))) {
+				pathRule = rule;
+				break;
+			}
+		}
+	}
 	return { endpointConfig, pathRule };
 }
 
