@@ -27,7 +27,7 @@ export function createConfig(env: Env): Config {
 		},
 		corsHeaders: {
 			allowedOrigins: environment === 'prod' ? ['https://www.fromthehart.tech'] : ['http://localhost:3000', 'https://dev.fromthehart.tech'],
-			allowedMethods: ['GET', 'POST', 'OPTIONS'],
+			allowedMethods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
 			allowedHeaders: ['Authorization', 'Content-Type', 'X-Requested-With', 'Accept', 'Origin', 'x-cf-turnstile-token'],
 			exposeHeaders: ['Content-Length', 'Content-Type', 'Cache-Control'],
 			allowCredentials: true,
